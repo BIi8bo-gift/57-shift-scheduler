@@ -8,8 +8,5 @@ pip install -r requirements.txt
 python app.py
 ```
 
-## 部署到 Render
-1. 连接 GitHub 仓库
-2. 新建 Web Service
-3. 选 Python 环境
-4. Start Command: `gunicorn app:app`
+## 一键部署到 Render
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/BIi8bo-gift/57-shift-scheduler)
