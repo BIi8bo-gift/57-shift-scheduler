@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>57车间排班表</title>
+<style>
+:root{--ease-out:cubic-bezier(0.23,1,0.32,1);--ease-in-out:cubic-bezier(0.77,0,0.175,1);--shadow-sm:0 1px 3px rgba(0,0,0,0.04);--shadow-md:0 4px 12px rgba(0,0,0,0.06);--shadow-lg:0 8px 30px rgba(0,0,0,0.1);--blue:#007aff;--blue-hover:#0062cc;--green:#34c759;--green-hover:#28a745;--red:#ff3b30;--gray-50:#f9f9f9;--gray-100:#f0f0f0;--gray-200:#e5e5ea;--gray-300:#c7c7cc;--gray-400:#aeaeb2;--gray-500:#8e8e93;--gray-600:#636366;--gray-700:#48484a;--gray-800:#2c2c2e;--gray-900:#1c1c1e;--bg:#f2f2f7;--text:var(--gray-800);--text-light:var(--gray-500);--glass:rgba(255,255,255,.85);--glass-strong:rgba(255,255,255,.96);--glass-border:rgba(0,0,0,.06)}
+[data-theme="dark"]{--bg:#0e1014;--gray-50:#17191f;--gray-100:#20232b;--gray-200:#2c303a;--gray-300:#3a3f4b;--gray-400:#868b97;--gray-500:#a0a5b1;--gray-600:#c3c8d2;--gray-700:#dadee6;--gray-800:#e9ecf1;--gray-900:#f6f8fb;--text:var(--gray-800);--text-light:var(--gray-500);--blue:#0a84ff;--blue-hover:#3a9bff;--green:#30d158;--green-hover:#46dd6c;--red:#ff453a;--shadow-sm:0 1px 3px rgba(0,0,0,.35);--shadow-md:0 6px 18px rgba(0,0,0,.45);--shadow-lg:0 16px 48px rgba(0,0,0,.6);--glass:rgba(26,28,34,.82);--glass-strong:rgba(34,37,45,.96);--glass-border:rgba(255,255,255,.09)}
+@media print{body{background:#fff!important;padding:8px;color:#000}.bar-wrap,.info,.m,.msg,.bar{display:none!important}.wrap{box-shadow:none;border:none;max-width:100%;overflow:visible}table{font-size:11px}th,td{border:1px solid #999;color:#000!important}h1{color:#000;font-size:20px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+@keyframes rowIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue","Microsoft YaHei",sans-serif;background:var(--bg);padding:40px 16px 20px;color:var(--text);-webkit-font-smoothing:antialiased}
+h1{font-size:28px;font-weight:700;letter-spacing:-0.02em;margin:4px 0 2px;color:var(--gray-900);line-height:1.15;text-align:center}
+.info{font-size:13px;color:var(--gray-500);margin:0 0 20px;line-height:1.4;text-align:center;letter-spacing:.005em}
+.bar-wrap{background:var(--glass);backdrop-filter:blur(40px) saturate(200%);-webkit-backdrop-filter:blur(40px) saturate(200%);border-radius:14px;padding:10px 12px;margin-bottom:12px;box-shadow:var(--shadow-sm);border:1px solid var(--glass-border)}
+.bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:center}
+.bar label{font-weight:500;font-size:13px;color:var(--gray-500)}
+.inp{height:34px;padding:0 10px;border:1px solid var(--gray-200);border-radius:10px;font-size:14px;font-family:inherit;background:var(--gray-50);transition:border-color 150ms var(--ease-out),box-shadow 150ms var(--ease-out)}
+.inp:focus{outline:none;border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(0,122,255,.12)}
+.btn{height:34px;padding:0 14px;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:transform 100ms var(--ease-out),background 150ms var(--ease-out);will-change:transform}
+.btn:active{transform:scale(.95)}
+.btn-p{background:var(--blue);color:#fff;box-shadow:0 1px 3px rgba(0,122,255,.25)}.btn-p:hover{background:var(--blue-hover)}
+.btn-g{background:var(--green);color:#fff;box-shadow:0 1px 3px rgba(52,199,89,.25)}.btn-g:hover{background:var(--green-hover)}
+.btn-o{background:rgba(255,255,255,.8);border:1px solid var(--gray-200);color:var(--gray-600)}.btn-o:hover{background:#fff;border-color:var(--gray-300);color:var(--gray-700)}
+.btn-sm{height:30px;padding:0 10px;font-size:12px}
+input[type=checkbox]{width:16px;height:16px;accent-color:var(--blue);cursor:pointer}
+.wrap{background:#fff;border-radius:16px;overflow:auto;margin:0 auto 12px;max-width:1200px;width:100%;box-shadow:var(--shadow-md);max-height:calc(100vh - 200px)}
+table{width:100%;border-collapse:collapse;font-size:14px;font-family:inherit}
+th,td{padding:12px 10px;text-align:center;vertical-align:middle;border-bottom:1px solid var(--gray-100)}
+th{white-space:nowrap}td{white-space:normal;word-break:break-word;max-width:140px}
+td:first-child{white-space:nowrap;max-width:none;font-weight:500}
+th{font-size:13px;font-weight:600;padding:9px 8px;color:var(--gray-600);letter-spacing:.02em;background:var(--gray-50);position:sticky;top:0;z-index:20;border-top:none}
+tr:last-child td{border-bottom:none}
+/* 选择模式 - 默认隐藏复选框列 */
+.cbtd,.cbth{display:none}
+body.selmode .cbth{display:table-cell;position:sticky;left:0;z-index:11;background:var(--gray-50);width:30px;min-width:30px}
+body.selmode .cbtd{display:table-cell;position:sticky;left:0;z-index:6;background:#fff;width:30px;min-width:30px}
+body.selmode td:nth-child(2){position:sticky;left:30px;z-index:5;background:#fff;min-width:105px;white-space:nowrap}
+body.selmode th:nth-child(2){position:sticky;left:30px;z-index:10;min-width:105px}
+.rn{cursor:pointer;border-bottom:1px dashed var(--gray-300);transition:color 150ms var(--ease-out),border-color 150ms var(--ease-out)}
+.rn:hover{color:var(--blue);border-color:var(--blue)}
+.cl{cursor:pointer;min-height:34px;line-height:1.6;transition:background 120ms var(--ease-out);border-radius:4px}
+@media(hover:hover){.cl:hover{background:var(--gray-50)!important}}
+.tg{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;margin:1px;white-space:nowrap;font-weight:500;line-height:1.4;letter-spacing:.01em}
+.tg-force{background:var(--red)!important;color:#fff!important;font-weight:600!important}
+.msg{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:rgba(0,0,0,.8);color:#fff;backdrop-filter:blur(20px);padding:12px 24px;border-radius:14px;font-size:14px;font-weight:500;z-index:300;opacity:0;pointer-events:none;font-family:inherit;box-shadow:0 4px 20px rgba(0,0,0,.15);transition:opacity 200ms var(--ease-out),transform 200ms var(--ease-out)}
+.msg.sh{opacity:1;transform:translateX(-50%) translateY(0)}
+.m{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.3);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity 280ms var(--ease-out)}
+.m.s{opacity:1;pointer-events:auto}
+.md{background:var(--glass-strong);backdrop-filter:blur(40px) saturate(200%);-webkit-backdrop-filter:blur(40px) saturate(200%);border-radius:18px;padding:16px;width:360px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);border:1px solid var(--glass-border);transform:scale(.92) translateY(20px);transition:transform 320ms var(--ease-out),opacity 280ms var(--ease-out);opacity:0}
+.m.s .md{transform:scale(1) translateY(0);opacity:1}
+.md h3{font-size:15px;margin-bottom:2px;color:var(--gray-800)}
+.md .h{font-size:12px;color:var(--gray-400);margin-bottom:8px}
+.md .g{display:flex;flex-wrap:wrap;gap:4px;overflow-y:auto;max-height:260px;padding:4px 0}
+.md .g>div{padding:5px 12px;border-radius:20px;border:1.5px solid var(--gray-200);font-size:13px;cursor:pointer;user-select:none;transition:all 100ms var(--ease-out);color:var(--gray-700)}
+.md .g>div:active{transform:scale(.95)}
+.md .g>div:hover{background:var(--gray-50);border-color:var(--gray-300)}
+.md .g .s{background:var(--blue)!important;border-color:var(--blue)!important;color:#fff!important;font-weight:500!important}
+.md .g .d{opacity:.3;cursor:default;pointer-events:none}
+.md .g .d:hover{filter:none}
+.md .g .fd{opacity:.45;cursor:pointer;border-style:dashed!important;border-color:var(--red)!important;color:var(--red)!important}
+.md .g .fd:hover{opacity:1;background:rgba(255,59,48,.06)}
+.md .ab{display:flex;gap:6px;margin-top:8px}
+.md .ab input{flex:1;height:32px;padding:0 10px;border:1px solid var(--gray-200);border-radius:10px;font-size:13px;font-family:inherit;background:var(--gray-50);transition:border-color 150ms var(--ease-out)}
+.md .ab input:focus{outline:none;border-color:var(--blue)}
+.md .bt{display:flex;gap:8px;margin-top:10px;justify-content:flex-end;border-top:1px solid var(--gray-100);padding-top:9px}
+</style>
+</head>
+<body>
+
+<div style="max-width:1100px;margin:0 auto;margin-bottom:12px">
+<h1>57车间排班表</h1>
+<div class="info">选日期→添加→点击格子选择<br class="mob">灰色=已排他班·双击强制·红色标记</div>
+
+<div class="bar-wrap">
+<div class="bar">
+  <label>日期</label>
+  <input type="date" class="inp" id="d" style="width:120px" onchange="updateRangeInfo()">
+  <label id="rngLbl">至</label>
+  <input type="date" class="inp" id="d2" style="width:120px" onchange="updateRangeInfo()">
+  <button class="btn btn-p" id="btnAdd" onclick="addRow()" style="min-width:72px">+ 添加</button>
+  <button class="btn btn-p" id="btnSelMode" onclick="toggleSelMode()" style="min-width:72px">删除</button>
+  <button class="btn btn-o btn-sm" onclick="mgr('people')">人员</button>
+  <button class="btn btn-o btn-sm" onclick="mgr('work')">工作</button>
+  <button class="btn btn-o btn-sm" onclick="mgr('batch')">批号</button>
+  <span style="font-size:12px;color:var(--gray-400)" id="st"></span>
+  <span style="font-size:12px;color:var(--gray-400)" id="rangeInfo"></span>
+</div>
+</div>
+</div>
+
+<div class="wrap">
+<table>
+<thead><tr>
+  <th class="cbth"><input type="checkbox" id="selAll" onchange="toggleAll()"></th>
+  <th style="width:105px;min-width:105px;background:var(--gray-50);position:sticky;left:0;z-index:10">日期</th>
+  <th style="background:#dcfce7" id="h0">批1</th>
+  <th style="background:#dbeafe" id="h1">批2</th>
+  <th style="background:#fef9c3" id="h2">批3</th>
+  <th style="background:#dbeafe"><span class="rn" onclick="renH('e')" id="hdr_e">早班</span></th>
+  <th style="background:#93c5fd"><span class="rn" onclick="renH('mb')" id="hdr_mb">蓝</span></th>
+  <th style="background:#a78bfa;color:#fff"><span class="rn" onclick="renH('mp')" id="hdr_mp">紫</span></th>
+  <th style="background:#fef9c3"><span class="rn" onclick="renH('s1')" id="hdr_s1">1:30</span></th>
+  <th style="background:#fde68a"><span class="rn" onclick="renH('s2')" id="hdr_s2">3:30</span></th>
+  <th style="background:#fce7f3"><span class="rn" onclick="renH('bn')" id="hdr_bn">大夜</span></th>
+  <th style="background:#f1f5f9"><span class="rn" onclick="renH('of')" id="hdr_of">休</span></th>
+</tr></thead>
+<tbody id="tb"></tbody>
+</table>
+</div>
+
+<div style="max-width:1100px;margin:0 auto" class="bar">
+  <span style="font-size:12px;color:var(--gray-400)" id="selInfo"></span>
+  <button class="btn btn-g" onclick="exp()">📥 导出 Excel</button>
+  <button class="btn btn-o btn-sm" id="btnDelSel" onclick="delSel()" style="display:none">🗑️ 删选中</button>
+</div>
+
+<div class="msg" id="msg"></div>
+
+<div class="m" id="mx">
+  <div class="md">
+    <h3 id="mxt"></h3>
+    <div class="h" id="mxh"></div>
+    <div class="g" id="mxg"></div>
+    <div class="ab"><input id="mxn" placeholder="添加新名称"><button class="btn btn-g btn-sm" onclick="mdAdd()">+</button></div>
+    <div class="bt">
+      <button class="btn btn-o" onclick="mdCancel()">取消</button>
+      <button class="btn btn-p" onclick="mdOk()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- SheetJS still available for future use, but export now uses server-side openpyxl -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+'use strict';
+
+var D = {people:[], batch:[], work:[], rows:[]};
+
+function initD() {
+  try { var r = localStorage.getItem('s57v2'); if (r) { var d = JSON.parse(r); if (d && d.people) { D = d; if(!D.colHeaders) D.colHeaders={}; return; } } } catch(e){}
+  D = {
+    people: ['王征征','林新燕','王晓龙','李振','王学灵','崔国干','常远','孙文斌','朱庆强','张峰','毛志琛'],
+    batch: ['2529','05202606013','48202506005'],
+    colHeaders: {},
+    work: ['2500L培养','500L培养','100L培养','WAVE培养','配离心缓冲液','下罐离心','补料A/B配液','纯化','碟片离心','深层过滤','清场记录','收获'],
+    rows: []
+  };
+}
+initD();
+
+function save() { try { localStorage.setItem('s57v2', JSON.stringify(D)); } catch(e){} }
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function today(){var t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')}
+function sl(d){return d.replace(/-/g,'/')}
+
+function msg(m){
+  var e=$('msg');e.textContent=m;e.className='msg sh';
+  clearTimeout(window._mt);window._mt=setTimeout(function(){e.className='msg'},2500);
+}
+
+var _ctx = null;
+var _mgr = null;
+
+// ===== 表头批号 =====
+function drawH(){
+  for(var i=0;i<3;i++){
+    var e=$('h'+i);if(!e)continue;
+    e.innerHTML='<span class="rn" onclick="renB('+i+')">'+esc(D.batch[i]||'批号'+(i+1))+'</span>';
+  }
+  // 恢复班次列名
+  if(D.colHeaders){
+    var keys=['e','mb','mp','s1','s2','bn','of'];
+    for(var i=0;i<keys.length;i++){
+      var el=$('hdr_'+keys[i]);
+      if(el && D.colHeaders[keys[i]]) el.textContent=D.colHeaders[keys[i]];
+    }
+  }
+}
+function renB(i){
+  var o=D.batch[i]||'批号'+(i+1);var n=prompt('重命名批号：',o);
+  if(!n||n===o)return;
+  D.batch[i]=n;save();drawH();msg('已重命名');
+}
+function renH(key){
+  var names={e:'早班',mb:'蓝',mp:'紫',s1:'1:30',s2:'3:30',bn:'大夜',of:'休'};
+  var el=$('hdr_'+key);
+  var cur=el.textContent;
+  var n=prompt('重命名班次：',cur);
+  if(!n||n===cur)return;
+  if(!D.colHeaders) D.colHeaders={};
+  D.colHeaders[key]=n;
+  el.textContent=n;
+  save();msg('已重命名');
+}
+
+// ===== 选择模式 + 多选删除 =====
+var _selMode = false;
+var _sel = {};
+
+function toggleSelMode(){
+  _selMode = !_selMode;
+  document.body.className = _selMode ? 'selmode' : '';
+  $('btnSelMode').textContent = _selMode ? '完成' : '删除';
+  if(_selMode){
+    for(var i=0;i<D.rows.length;i++) _sel[i] = true;
+    // 全选所有行checkbox
+    var cbs = document.querySelectorAll('#tb .cbtd input');
+    for(var i=0;i<cbs.length;i++) cbs[i].checked = true;
+    $('selAll').checked = D.rows.length>0;
+  } else {
+    _sel = {};
+    $('selAll').checked = false;
+  }
+  var n = _selMode ? D.rows.length : 0;
+  var b = $('btnDelSel');
+  if(n>0){ b.style.display='inline-block'; b.textContent='🗑️ 删选中('+n+')'; }
+  else { b.style.display='none'; }
+  $('selInfo').textContent = n>0 ? '已选 '+n+' 行' : '';
+}
+
+function toggleAll(){
+  var c = $('selAll').checked;
+  for(var i=0;i<D.rows.length;i++) _sel[i] = c;
+  // 更新所有行checkbox
+  var tds = document.querySelectorAll('#tb .cbtd input');
+  for(var i=0;i<tds.length;i++) tds[i].checked = c;
+  updateSelUI();
+}
+
+function toggleSel(i){
+  _sel[i] = !_sel[i];
+  var cbs = document.querySelectorAll('#tb .cbtd input');
+  if(cbs[i]) cbs[i].checked = _sel[i];
+  updateSelUI();
+}
+
+function updateSelUI(){
+  var n = 0;
+  for(var k in _sel) if(_sel[k]) n++;
+  // 全选状态
+  var all = D.rows.length>0;
+  for(var i=0;i<D.rows.length;i++) if(!_sel[i]){ all=false; break; }
+  $('selAll').checked = all;
+  // 删除按钮 + 提示
+  var b = $('btnDelSel');
+  if(n>0){ b.style.display='inline-block'; b.textContent='🗑️ 删选中('+n+')'; }
+  else { b.style.display='none'; }
+  $('selInfo').textContent = n>0 ? '已选 '+n+' 行' : '';
+}
+
+function delSel(){
+  var idxs = [];
+  for(var k in _sel) if(_sel[k]) idxs.push(parseInt(k));
+  if(!idxs.length){ msg('未选择'); return; }
+  if(!confirm('删除 '+idxs.length+' 行？')) return;
+  idxs.sort(function(a,b){return b-a});
+  for(var i=0;i<idxs.length;i++) D.rows.splice(idxs[i],1);
+  _sel = {};
+  save(); render(); msg('已删除 '+idxs.length+' 行');
+}
+
+// ===== 渲染 =====
+var _firstRender = true;
+function render(){
+  drawH();
+  var tb = $('tb');
+  if(!D.rows.length){
+    tb.innerHTML='<tr><td colspan="12" style="padding:24px;color:var(--gray-400);font-size:13px">选日期 → 添加</td></tr>';
+    $('st').textContent='';
+    return;
+  }
+  var h = '';
+  for(var i=0;i<D.rows.length;i++){
+    var r = D.rows[i];
+    var delay = i*25;
+    var checked = _sel[i] ? ' checked' : '';
+    
+    // 构建每列
+    function tg(n,c){ return '<span class="tg" style="background:'+c+'">'+esc(n)+'</span>'; }
+    
+    function wCell(k, bg, ci){
+      var arr = r[k]||[];
+      var txt = arr.length ? arr.map(function(x){return tg(x,bg);}).join('') : '<span style="color:var(--gray-300)">—</span>';
+      return '<td class="cl" style="background:'+bg+'" onclick="pkW('+i+','+ci+')">'+txt+'</td>';
+    }
+    
+    function pCell(k, bg){
+      var arr = r[k]||[];
+      var txt = arr.length ? arr.map(function(x){
+        var c = x.f ? 'var(--red)' : bg;
+        return tg(x.n, c);
+      }).join('') : '<span style="color:var(--gray-300)">—</span>';
+      return '<td class="cl" style="background:'+bg+'" onclick="pkP('+i+',\''+k+'\')">'+txt+'</td>';
+    }
+    
+    var animStyle = _firstRender ? 'animation:rowIn 250ms var(--ease-out) both;animation-delay:'+delay+'ms;' : '';
+    h += '<tr style="'+animStyle+'">';
+    h += '<td class="cbtd"><input type="checkbox" onchange="toggleSel('+i+')"'+checked+'></td>';
+    h += '<td style="position:sticky;left:0;z-index:5;background:#fff;min-width:105px;white-space:nowrap">'+esc(r.d)+'</td>';
+    h += wCell('w0','#dcfce7',0)+wCell('w1','#dbeafe',1)+wCell('w2','#fef9c3',2);
+    h += pCell('e','#dbeafe')+pCell('mb','#93c5fd')+pCell('mp','#a78bfa');
+    h += pCell('s1','#fef9c3')+pCell('s2','#fde68a')+pCell('bn','#fce7f3')+pCell('of','#f1f5f9');
+    h += '</tr>';
+  }
+  tb.innerHTML = h;
+  $('st').textContent = D.rows.length+'行';
+  updateSelUI();
+  _firstRender = false;
+}
+
+// ===== 范围 =====
+function updateRangeInfo(){
+  var d1 = $('d').value, d2 = $('d2').value;
+  if(!d1 || !d2){ $('rangeInfo').textContent=''; return; }
+  if(d1 > d2){ $('rangeInfo').textContent='开始>结束'; return; }
+  var diff = (new Date(d2) - new Date(d1)) / 86400000 + 1;
+  $('rangeInfo').textContent = diff>1 ? '共 '+diff+' 天' : '';
+}
+function addBatchRows(){
+  var d1 = $('d').value, d2 = $('d2').value;
+  if(!d1 || !d2){ msg('选日期'); return; }
+  if(d1 > d2){ msg('开始日期大于结束日期'); return; }
+  var added = 0;
+  var cur = new Date(d1);
+  var end = new Date(d2);
+  while(cur <= end){
+    var ds = cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0')+'-'+String(cur.getDate()).padStart(2,'0');
+    var d = sl(ds);
+    var exists = false;
+    for(var i=0;i<D.rows.length;i++){ if(D.rows[i].d===d){ exists=true; break; } }
+    if(!exists){
+      D.rows.push({d:d,w0:[],w1:[],w2:[],e:[],mb:[],mp:[],s1:[],s2:[],bn:[],of:[]});
+      added++;
+    }
+    cur.setDate(cur.getDate()+1);
+  }
+  if(!added){ msg('全部已存在'); return; }
+  D.rows.sort(function(a,b){ return a.d>b.d?1:(a.d<b.d?-1:0); });
+  save(); render(); msg('添加 '+added+' 天');
+}
+
+// ===== 添加/删除单行 =====
+function addRow(){
+  var d1 = $('d').value, d2 = $('d2').value;
+  if(d2 && d1 !== d2){ addBatchRows(); return; }
+  var d = $('d').value;
+  if(!d){ msg('选日期'); return; }
+  d = sl(d);
+  for(var i=0;i<D.rows.length;i++){ if(D.rows[i].d===d){ msg('已存在'); return; } }
+  D.rows.push({d:d,w0:[],w1:[],w2:[],e:[],mb:[],mp:[],s1:[],s2:[],bn:[],of:[]});
+  D.rows.sort(function(a,b){ return a.d>b.d?1:(a.d<b.d?-1:0); });
+  save(); render(); msg('已添加');
+}
+
+
+
+// ===== 工作内容选择弹窗 =====
+function pkW(ri, ci){
+  _ctx = {ri:ri, key:'w'+ci, mode:'work'};
+  var r = D.rows[ri];
+  var cur = r['w'+ci]||[];
+  var title = (D.batch[ci]||'批号'+(ci+1))+' — 工作内容';
+  $('mxt').textContent = r.d+' — '+title;
+  $('mxh').textContent = '点击选择该批号今日工作';
+  gridW(cur);
+  $('mxn').placeholder = '新工作内容';
+  $('mx').className = 'm s';
+}
+function gridW(cur){
+  $('mxg').innerHTML = D.work.map(function(n){
+    var s = cur.indexOf(n)>=0 ? ' s' : '';
+    return '<div class="'+s+'" onclick="gdW(\''+esc(n)+'\')">'+esc(n)+'</div>';
+  }).join('');
+}
+function gdW(n){
+  var r = D.rows[_ctx.ri]; if(!r) return;
+  var cur = r[_ctx.key]||[];
+  var i = cur.indexOf(n);
+  if(i>=0) cur.splice(i,1); else cur.push(n);
+  gridW(cur);
+}
+
+// ===== 人员选择弹窗 =====
+function pkP(ri, key){
+  _ctx = {ri:ri, key:key, mode:'person'};
+  var r = D.rows[ri];
+  var cur = r[key]||[];
+  var ns = {};
+  var keys=['e','mb','mp','s1','s2','bn','of'];
+  var defs={e:'早班',mb:'蓝',mp:'紫',s1:'1:30',s2:'3:30',bn:'大夜',of:'休'};
+  for(var k=0;k<keys.length;k++) ns[keys[k]] = (D.colHeaders&&D.colHeaders[keys[k]]) || defs[keys[k]];
+  $('mxt').textContent = r.d+' — '+ns[key];
+  $('mxh').textContent = '点击选人·灰色=已排别班可双击强制(红色)';
+  gridP(cur, key, ri);
+  $('mxn').placeholder = '新姓名';
+  $('mx').className = 'm s';
+}
+function gridP(cur, key, ri){
+  var r = D.rows[ri]; if(!r) return;
+  var allKeys = ['e','mb','mp','s1','s2','bn','of'];
+  var h = '';
+  for(var i=0;i<D.people.length;i++){
+    var n = D.people[i];
+    var inCur = cur.some(function(x){ return x.n===n; });
+    var inOther = false;
+    for(var j=0;j<allKeys.length;j++){
+      if(allKeys[j]===key) continue;
+      // 蓝/紫 与 早班 不互斥
+      if((key==='mb'||key==='mp') && allKeys[j]==='e') continue;
+      if(key==='e' && (allKeys[j]==='mb'||allKeys[j]==='mp')) continue;
+      if(r[allKeys[j]] && r[allKeys[j]].some(function(x){ return x.n===n; })){ inOther=true; break; }
+    }
+    var cls = '';
+    if(inCur) cls = ' s';
+    else if(inOther) cls = ' fd';
+    var onclick = inOther ? "pkPForce('"+esc(n)+"')" : "pkPClick('"+esc(n)+"')";
+    h += '<div class="'+cls+'" onclick="'+onclick+'">'+esc(n)+'</div>';
+  }
+  $('mxg').innerHTML = h;
+}
+function pkPClick(n){
+  var r = D.rows[_ctx.ri]; if(!r) return;
+  var cur = r[_ctx.key]||[];
+  var idx = cur.findIndex(function(x){ return x.n===n; });
+  if(idx>=0) cur.splice(idx,1); else cur.push({n:n,f:0});
+  gridP(cur, _ctx.key, _ctx.ri);
+}
+function pkPForce(n){
+  var r = D.rows[_ctx.ri]; if(!r) return;
+  var cur = r[_ctx.key]||[];
+  var idx = cur.findIndex(function(x){ return x.n===n; });
+  if(idx>=0){ cur.splice(idx,1); }else{ cur.push({n:n,f:1}); msg('强制排班 '+n); }
+  gridP(cur, _ctx.key, _ctx.ri);
+}
+
+// ===== 弹窗通用 =====
+function mdAdd(){
+  var n = $('mxn').value.trim(); if(!n){ msg('输入'); return; }
+  if(!_ctx){ msg('错误'); return; }
+  if(_ctx.mode==='work'){
+    if(D.work.indexOf(n)>=0){ msg('已有'); return; }
+    D.work.push(n); D.work.sort();
+  } else {
+    if(D.people.indexOf(n)>=0){ msg('已有'); return; }
+    D.people.push(n);
+  }
+  save(); $('mxn').value = '';
+  var r = D.rows[_ctx.ri];
+  if(_ctx.mode==='work') gridW(r[_ctx.key]||[]);
+  else gridP(r[_ctx.key]||[], _ctx.key, _ctx.ri);
+  msg('已添加');
+}
+function mdOk(){ save(); mdClose(); render(); }
+function mdCancel(){ mdClose(); }
+function mdClose(){ $('mx').className='m'; _ctx=null; _mgr=null; }
+
+// ===== 管理弹窗（人员/工作/批号） =====
+function mgr(mode){
+  _mgr = mode; _ctx = {mode:mode, mode2:true};
+  var titles={people:'人员管理(点击删除)',work:'工作内容管理(点击删除)',batch:'批号管理(点击列名可重命名)'};
+  var lists={people:D.people, work:D.work, batch:D.batch};
+  $('mxt').textContent = titles[mode];
+  $('mxh').textContent = '';
+  $('mxg').innerHTML = lists[mode].map(function(n,i){
+    return '<div class="s" onclick="mdDel('+i+')">'+esc(n)+' &#x00D7;</div>';
+  }).join('');
+  $('mxn').placeholder = {people:'新姓名', work:'新工作内容', batch:'新批号'}[mode];
+  $('mx').className = 'm s';
+}
+function mdDel(i){
+  var lists={people:D.people, work:D.work, batch:D.batch};
+  if(_mgr==='batch'){ msg('批号请在表头点击列名重命名'); return; }
+  if(!confirm('删除 '+(lists[_mgr][i])+'？')) return;
+  lists[_mgr].splice(i,1); save(); mgr(_mgr);
+}
+
+// ===== 导出（8列正确格式） =====
+function exp(){
+  if(!D.rows.length){ msg('无数据'); return; }
+  
+  var shiftKeys = ['e','mb','mp','s1','s2','bn','of'];
+  var shiftDefaultNames = {e:'早班',mb:'蓝',mp:'紫',s1:'1:30',s2:'3:30',bn:'大夜',of:'休'};
+  
+  // Map shift column key to export group based on header name
+  function getShiftGroup(k){
+    var name = (D.colHeaders&&D.colHeaders[k]) || shiftDefaultNames[k] || k;
+    if(name.indexOf('早')>=0 || name==='e') return 'morning';
+    if(name.indexOf('小夜')>=0 || name==='mb' || name==='mp' || name==='s1' || name==='s2') return 'evening';
+    if(name.indexOf('大夜')>=0 || name==='bn') return 'night';
+    if(name.indexOf('休')>=0 || name==='of') return 'off';
+    return 'morning';
+  }
+  
+  function fmtPeople(arr){
+    if(!arr||!arr.length) return '';
+    return arr.map(function(p){
+      if(typeof p==='object'){
+        return p.f ? (p.n + '(强)') : p.n;
+      }
+      return String(p);
+    }).join('、');
+  }
+  
+  function jnWork(arr){
+    if(!arr||!arr.length) return '';
+    // Format: if item contains parens, keep; else join with newline
+    return arr.join('\n');
+  }
+  
+  // Batch column names (what user sees in the table headers)
+  var batchNames = [
+    D.batch[0] || '批号1',
+    D.batch[1] || '批号2',
+    D.batch[2] || '批号3'
+  ];
+  
+  // Build export rows - one per date, 8 columns
+  var exportRows = [];
+  for(var i=0;i<D.rows.length;i++){
+    var r = D.rows[i];
+    
+    // Three batch columns: w0, w1, w2
+    var b1 = jnWork(r.w0||[]);
+    var b2 = jnWork(r.w1||[]);
+    var b3 = jnWork(r.w2||[]);
+    
+    // Collect people by shift group
+    var groups = {morning:[], evening:[], night:[], off:[]};
+    shiftKeys.forEach(function(k){
+      var g = getShiftGroup(k);
+      (r[k]||[]).forEach(function(p){
+        var name = (typeof p==='object') ? p.n+(p.f?'(强)':'') : String(p);
+        if(groups[g]) groups[g].push(name);
+      });
+    });
+    
+    exportRows.push({
+      date: r.d,
+      batch1: b1,
+      batch2: b2,
+      batch3: b3,
+      morning: groups.morning.join('、'),
+      evening: groups.evening.join('、'),
+      night: groups.night.join('、'),
+      off: groups.off.join('、'),
+    });
+  }
+  
+  // Build payload
+  var dates = D.rows.map(function(r){ return r.d; });
+  var payload = {
+    batchLabel: '57车间排班表',
+    batchNames: batchNames,
+    dateRange: (dates.length ? dates[0] + ' ~ ' + dates[dates.length-1] : ''),
+    rows: exportRows,
+    summaryText: '57车间 ' + (dates.length||0) + ' 个工作日',
+  };
+  
+  // POST to /export
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/export', true);
+  xhr.responseType = 'blob';
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      var blob = xhr.response;
+      var url = window.URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = '57车间排班表.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      msg('导出成功');
+    } else {
+      msg('导出失败: '+xhr.status);
+    }
+  };
+  xhr.onerror = function(){ msg('导出失败，网络错误'); };
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.send(JSON.stringify(payload));
+}
+
+$('d').value = today();
+render();
+</script>
+</body>
+</html>

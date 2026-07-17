@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>57车间排班表</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei",sans-serif;background:#f5f5f5;padding:10px;font-size:14px}
+h1{font-size:17px;margin-bottom:4px}
+.info{font-size:11px;color:#888;margin-bottom:6px}
+.bar{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;align-items:center;justify-content:center}
+.bar label{font-weight:600;font-size:12px}
+.inp{height:28px;padding:0 6px;border:1px solid #aaa;border-radius:4px;font-size:13px;font-family:inherit}
+.btn{height:28px;padding:0 10px;border:none;border-radius:4px;font-size:12px;cursor:pointer}
+.btn-p{background:#2563eb;color:#fff}
+.btn-g{background:#16a34a;color:#fff}
+.btn-o{background:#fff;border:1px solid #aaa}
+.btn-sm{height:24px;padding:0 8px;font-size:11px}
+.wrap{background:#fff;border-radius:5px;overflow-x:auto;margin:0 auto 4px;max-width:1100px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th,td{border:1px solid #ccc;padding:6px 8px;text-align:center;vertical-align:middle;white-space:nowrap}
+th{background:#f0f0f0;font-weight:600;font-size:11px;padding:5px 5px}
+.rn{cursor:pointer;border-bottom:1px dashed #999}
+.rn:hover{color:#2563eb}
+.cl{cursor:pointer;min-height:28px;line-height:1.6}
+.cl:hover{filter:brightness(0.96)!important}
+.tg{display:inline-block;padding:1px 3px;border-radius:2px;font-size:10px;margin:1px;white-space:nowrap}
+.tr{background:#ef4444!important;color:#fff!important;font-weight:500!important;border-color:#dc2626!important}
+.msg{position:fixed;bottom:50px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:5px 14px;border-radius:4px;font-size:12px;z-index:300;opacity:0;transition:.3s;pointer-events:none}
+.m{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.3);z-index:200;display:none;align-items:center;justify-content:center}
+.m.s{display:flex}
+.md{background:#fff;border-radius:10px;padding:12px;width:340px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column}
+.md h3{font-size:13px;margin-bottom:3px}
+.md .h{font-size:11px;color:#888;margin-bottom:6px}
+.md .g{display:flex;flex-wrap:wrap;gap:3px;overflow-y:auto;max-height:250px;padding:3px 0}
+.md .g>div{padding:4px 10px;border-radius:12px;border:2px solid #ccc;font-size:12px;cursor:pointer;user-select:none;transition:.05s}
+.md .g>div:hover{filter:brightness(.92)}
+.md .g .s{background:#2563eb!important;border-color:#1d4ed8!important;color:#fff!important;font-weight:500!important}
+.md .g .d{opacity:.3;cursor:default}
+.md .g .d:hover{filter:none}
+.md .g .fd{opacity:.5;cursor:pointer;border-style:dashed!important;border-color:#ef4444!important;color:#ef4444!important}
+.md .g .fd:hover{opacity:1;background:#fef2f2!important}
+.md .ab{display:flex;gap:4px;margin-top:6px}
+.md .ab input{flex:1;height:26px;padding:0 6px;border:1px solid #ccc;border-radius:4px;font-size:12px;font-family:inherit}
+.md .bt{display:flex;gap:6px;margin-top:8px;justify-content:flex-end;border-top:1px solid #eee;padding-top:7px}
+</style>
+</head>
+<body>
+
+<div style="max-width:1100px;margin:0 auto;margin-bottom:12px">
+<h1 style="text-align:center">📋 57车间排班表</h1>
+<div class="info" style="text-align:center">选日期→添加→点击格子选择（灰=已排他班，双击强制选用红标）</div>
+
+<div class="bar">
+  <label>日期：</label>
+  <input type="date" class="inp" id="d" style="width:126px">
+  <button class="btn btn-p" onclick="addRow()">+ 添加</button>
+  <button class="btn btn-o btn-sm" onclick="delRow()">删选中</button>
+  <button class="btn btn-o btn-sm" onclick="mgr('people')">人员</button>
+  <button class="btn btn-o btn-sm" onclick="mgr('work')">工作</button>
+  <button class="btn btn-o btn-sm" onclick="mgr('batch')">批号</button>
+  <span style="font-size:10px;color:#999" id="st"></span>
+</div>
+</div>
+
+<div class="wrap">
+<table>
+<thead><tr>
+  <th style="width:60px">日期</th>
+  <th style="background:#dcfce7" id="h0">批1</th>
+  <th style="background:#dbeafe" id="h1">批2</th>
+  <th style="background:#fef9c3" id="h2">批3</th>
+  <th style="background:#dbeafe">早班</th>
+  <th style="background:#93c5fd">蓝</th>
+  <th style="background:#a78bfa;color:#fff">紫</th>
+  <th style="background:#fef9c3">1:30</th>
+  <th style="background:#fde68a">3:30</th>
+  <th style="background:#fce7f3">大夜</th>
+  <th style="background:#f1f5f9">休</th>
+</tr></thead>
+<tbody id="tb"></tbody>
+</table>
+</div>
+
+<div style="max-width:1100px;margin:0 auto" class="bar"><button class="btn btn-g" onclick="exp()">📥 导出 TSV</button></div>
+
+<div class="msg" id="msg"></div>
+
+<div class="m" id="mx">
+  <div class="md">
+    <h3 id="mxt"></h3>
+    <div class="h" id="mxh"></div>
+    <div class="g" id="mxg"></div>
+    <div class="ab"><input id="mxn" placeholder="添加新名称"><button class="btn btn-g btn-sm" onclick="mdAdd()">+</button></div>
+    <div class="bt">
+      <button class="btn btn-o" onclick="mdCancel()">取消</button>
+      <button class="btn btn-p" onclick="mdOk()">确定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ===== 数据 =====
+var D = {people:[], batch:[], work:[], rows:[]};
+
+function initD() {
+  try { var r = localStorage.getItem('s57v2'); if (r) { var d = JSON.parse(r); if (d && d.people) { D = d; return; } } } catch(e){}
+  D = {
+    people: ['王征征','林新燕','王晓龙','李振','王学灵','崔国干','常远','孙文斌','朱庆强','张峰','毛志琛'],
+    batch: ['2529','05202606013','48202506005'],
+    work: ['2500L培养','500L培养','100L培养','WAVE培养','配离心缓冲液','下罐离心','补料A/B配液','纯化','碟片离心','深层过滤','清场记录','收获'],
+    rows: []
+  };
+}
+initD();
+
+function save() { try { localStorage.setItem('s57v2', JSON.stringify(D)); } catch(e){} }
+
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function today(){var t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')}
+function sl(d){return d.replace(/-/g,'/')}
+
+function msg(m){
+  var e=$('msg');e.textContent=m;e.style.opacity='1';
+  clearTimeout(window._mt);window._mt=setTimeout(function(){e.style.opacity='0'},2500);
+}
+
+// ===== 状态 =====
+var _ctx = null; // {ri, key}
+var _mgr = null;
+
+// ===== 表头 =====
+function drawH(){
+  for(var i=0;i<3;i++){
+    var e=$('h'+i);if(!e)continue;
+    e.innerHTML='<span class="rn" onclick="renB('+i+')">'+esc(D.batch[i]||'批号'+(i+1))+'</span>';
+  }
+}
+function renB(i){
+  var o=D.batch[i]||'批号'+(i+1);var n=prompt('重命名批号：',o);
+  if(!n||n===o)return;
+  D.batch[i]=n;save();drawH();msg('已重命名');
+}
+
+// ===== 渲染 =====
+function render(){
+  drawH();
+  var tb=$('tb');
+  if(!D.rows.length){tb.innerHTML='<tr><td colspan="11" style="padding:20px;color:#999">选日期→添加</td></tr>';$('st').textContent='';return}
+  var h='';
+  for(var i=0;i<D.rows.length;i++){
+    var r=D.rows[i];
+    function tg(n,c){return'<span class="tg" style="background:'+c+'">'+esc(n)+'</span>'}
+    // 工作内容列
+    function wCell(k, bg, ci){
+      var arr=r[k]||[];
+      var txt=arr.length?arr.map(function(x){return tg(x,bg);}).join(''):'<span style="color:#bbb">—</span>';
+      return '<td class="cl" style="background:'+bg+'" onclick="pkW('+i+','+ci+')">'+txt+'</td>';
+    }
+    // 人员列
+    function pCell(k, bg){
+      var arr=r[k]||[];
+      var txt=arr.length?arr.map(function(x){var c=bg;if(x.f){c='#ef4444';};return tg(x.n,c);}).join(''):'<span style="color:#bbb">—</span>';
+      return '<td class="cl" style="background:'+bg+'" onclick="pkP('+i+',\''+k+'\')">'+txt+'</td>';
+    }
+    h+='<tr>'+
+      '<td>'+esc(r.d)+'</td>'+
+      wCell('w0','#dcfce7',0)+wCell('w1','#dbeafe',1)+wCell('w2','#fef9c3',2)+
+      pCell('e','#dbeafe')+pCell('mb','#93c5fd')+pCell('mp','#a78bfa')+
+      pCell('s1','#fef9c3')+pCell('s2','#fde68a')+pCell('bn','#fce7f3')+pCell('of','#f1f5f9')+
+    '</tr>';
+  }
+  tb.innerHTML=h;
+  $('st').textContent=D.rows.length+'行';
+}
+
+// ===== 添加/删除 =====
+function addRow(){
+  var d=$('d').value;
+  if(!d){msg('选日期');return}
+  d=sl(d);
+  for(var i=0;i<D.rows.length;i++){if(D.rows[i].d===d){msg('已存在');return}}
+  D.rows.push({d:d,w0:[],w1:[],w2:[],e:[],mb:[],mp:[],s1:[],s2:[],bn:[],of:[]});
+  D.rows.sort(function(a,b){return a.d>b.d?1:(a.d<b.d?-1:0)});
+  save();render();msg('已添加');
+}
+function delRow(){
+  var d=$('d').value;if(!d){msg('选日期');return}
+  d=sl(d);
+  for(var i=0;i<D.rows.length;i++){if(D.rows[i].d===d){
+    if(!confirm('删'+d+'？'))return;
+    D.rows.splice(i,1);save();render();msg('已删');return
+  }}
+  msg('不存在');
+}
+
+// ===== 工作内容选择 =====
+function pkW(ri, ci){
+  _ctx={ri:ri,key:'w'+ci,mode:'work'};
+  var r=D.rows[ri];var cur=r['w'+ci]||[];
+  var title=(D.batch[ci]||'批号'+(ci+1))+' — 工作内容';
+  $('mxt').textContent=r.d+' — '+title;
+  $('mxh').textContent='点击选择该批号今日工作';
+  gridW(cur);
+  $('mxn').placeholder='新工作内容';
+  $('mx').className='m s';
+}
+function gridW(cur){
+  $('mxg').innerHTML=D.work.map(function(n){var s=cur.indexOf(n)>=0?' s':'';return'<div class="'+s+'" onclick="gdW(\''+esc(n)+'\')">'+esc(n)+'</div>'}).join('');
+}
+function gdW(n){
+  var r=D.rows[_ctx.ri];if(!r)return;
+  var cur=r[_ctx.key]||[];var i=cur.indexOf(n);
+  if(i>=0)cur.splice(i,1);else cur.push(n);
+  gridW(cur);
+}
+
+// ===== 人员选择（含冲突管理） =====
+function pkP(ri, key){
+  _ctx={ri:ri,key:key,mode:'person'};
+  var r=D.rows[ri];var cur=r[key]||[];
+  var ns={e:'早班',mb:'中午蓝',mp:'中午紫',s1:'小夜1:30',s2:'小夜3:30',bn:'大夜班',of:'休班'};
+  $('mxt').textContent=r.d+' — '+ns[key];
+  $('mxh').textContent='左键选人·灰色=已排别班·双击灰色强制（红色）';
+  gridP(cur, key, ri);
+  $('mxn').placeholder='新姓名';
+  $('mx').className='m s';
+}
+
+function gridP(cur, key, ri){
+  var r=D.rows[ri];if(!r)return;
+  // 收集此人在其他班的所有分配
+  var allKeys=['e','mb','mp','s1','s2','bn','of'];
+  var h='';
+  for(var i=0;i<D.people.length;i++){
+    var n=D.people[i];
+    // 是否在当前班
+    var inCur=cur.some(function(x){return x.n===n});
+    // 是否在其他班
+    var inOther=false;
+    for(var j=0;j<allKeys.length;j++){
+      if(allKeys[j]===key)continue;
+      if(r[allKeys[j]]&&r[allKeys[j]].some(function(x){return x.n===n})){inOther=true;break;}
+    }
+    var cls='';
+    if(inCur){
+      // 在当前班：看是否是强制
+      var f=cur.some(function(x){return x.n===n&&x.f});
+      cls=f?' s':' s';
+    }else if(inOther){
+      cls=' fd'; // 灰色可双击强制
+    }
+    // 如果是已经在当前班，或者在其他班但可强制
+    var onclick='';
+    if(inCur){
+      onclick="pkPClick('"+esc(n)+"')";
+    }else if(inOther){
+      onclick="pkPForce('"+esc(n)+"')"; // 双击强制
+    }else{
+      onclick="pkPClick('"+esc(n)+"')";
+    }
+    h+='<div class="'+cls+'" onclick="'+onclick+'">'+esc(n)+'</div>';
+  }
+  $('mxg').innerHTML=h;
+}
+
+function pkPClick(n){
+  var r=D.rows[_ctx.ri];if(!r)return;
+  var cur=r[_ctx.key]||[];
+  var idx=cur.findIndex(function(x){return x.n===n});
+  if(idx>=0)cur.splice(idx,1);else cur.push({n:n,f:0});
+  gridP(cur,_ctx.key,_ctx.ri);
+}
+
+function pkPForce(n){
+  var r=D.rows[_ctx.ri];if(!r)return;
+  var cur=r[_ctx.key]||[];
+  // 检查是否已在当前班
+  var idx=cur.findIndex(function(x){return x.n===n});
+  if(idx>=0){cur.splice(idx,1);}else{cur.push({n:n,f:1});msg('⚠️ 强制排班 '+n);}
+  gridP(cur,_ctx.key,_ctx.ri);
+}
+
+// ===== 弹窗操作 =====
+function mdAdd(){
+  var n=$('mxn').value.trim();if(!n){msg('输入');return}
+  if(!_ctx){msg('错误');return}
+  if(_ctx.mode==='work'){
+    if(D.work.indexOf(n)>=0){msg('已有');return}
+    D.work.push(n);D.work.sort();
+  }else{
+    if(D.people.indexOf(n)>=0){msg('已有');return}
+    D.people.push(n);
+  }
+  save();$('mxn').value='';
+  var r=D.rows[_ctx.ri];
+  if(_ctx.mode==='work'){
+    var cur=r[_ctx.key]||[];
+    gridW(cur);
+  }else{
+    var cur2=r[_ctx.key]||[];
+    gridP(cur2,_ctx.key,_ctx.ri);
+  }
+  msg('已添加');
+}
+function mdOk(){save();mdClose();render()}
+function mdCancel(){mdClose()}
+function mdClose(){$('mx').className='m';_ctx=null;_mgr=null}
+
+// ===== 管理弹窗 =====
+function mgr(mode){
+  _mgr=mode;_ctx={mode:mode,mode2:true};
+  var titles={people:'人员管理（点击删除）',work:'工作内容管理（点击删除）',batch:'批号管理（点击列名可重命名）'};
+  var lists={people:D.people,work:D.work,batch:D.batch};
+  var list=lists[mode];
+  $('mxt').textContent=titles[mode];
+  $('mxh').textContent='';
+  $('mxg').innerHTML=list.map(function(n,i){return'<div class="s" onclick="mdDel('+i+')">'+esc(n)+' ×</div>'}).join('');
+  $('mxn').placeholder={people:'新姓名',work:'新工作内容',batch:'新批号'}[mode];
+  $('mx').className='m s';
+}
+function mdDel(i){
+  var lists={people:D.people,work:D.work,batch:D.batch};
+  var names={people:'姓名',work:'工作',batch:'批号'};
+  if(_mgr==='batch'){
+    $('#mxt').textContent='批号请在表头点击列名重命名';
+    msg('批号请在表头点击列名重命名');return;
+  }
+  if(!confirm('删除 '+(lists[_mgr][i])+'？'))return;
+  lists[_mgr].splice(i,1);save();mgr(_mgr);
+}
+
+// ===== 导出 =====
+function exp(){
+  if(!D.rows.length){msg('无数据');return}
+  var lines=[];var h=['日期'];
+  for(var i=0;i<3;i++)h.push(D.batch[i]||'批号'+(i+1));
+  h=h.concat(['早班','中午蓝','中午紫','小夜1:30','小夜3:30','大夜班','休班']);
+  lines.push(h.join('\t'));
+  for(var i=0;i<D.rows.length;i++){
+    var r=D.rows[i];
+    function jn(arr){return(arr||[]).map(function(x){return typeof x==='object'?x.n+(x.f?'(强)':''):x}).join(',');}
+    var row=[r.d,jn(r.w0),jn(r.w1),jn(r.w2),jn(r.e),jn(r.mb),jn(r.mp),jn(r.s1),jn(r.s2),jn(r.bn),jn(r.of)];
+    lines.push(row.join('\t'));
+  }
+  var b=new Blob(['\ufeff'+lines.join('\n')],{type:'text/plain;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='排班表.tsv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);
+  msg('导出成功');
+}
+
+// ===== 启动 =====
+$('d').value=today();
+render();
+</script>
+</body>
+</html>
