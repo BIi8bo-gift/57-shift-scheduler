@@ -4,7 +4,9 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from openpyxl.utils import get_column_letter
 
-app = Flask(__name__, static_folder='.')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app = Flask(__name__, static_folder=BASE_DIR)
 
 BATCH_FILLS = [
     PatternFill(start_color='D5F5E3', end_color='D5F5E3', fill_type='solid'),  # green
@@ -106,7 +108,7 @@ def build_xlsx(data):
 
 @app.route('/')
 def index():
-    return send_from_directory('.', 'index.html')
+    return send_from_directory(BASE_DIR, 'index.html')
 
 
 @app.route('/export', methods=['POST'])
