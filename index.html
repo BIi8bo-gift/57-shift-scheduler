@@ -151,8 +151,8 @@ function initD() {
   try { var r = localStorage.getItem('s57v2'); if (r) { var d = JSON.parse(r); if (d && d.people) { D = d; if(!D.colHeaders) D.colHeaders={}; return; } } } catch(e){}
   D = {
     people: ['王征征','林新燕','王晓龙','李振','王学灵','崔国干','常远','孙文斌','朱庆强','张峰','毛志琛'],
-    batch: ['2529','05202606013','48202506005'],
-    colHeaders: {},
+    batch: ['LNF2529','利妥昔','LNF2501'],
+    colHeaders: {e:'中午值班',mb:'延迟吃饭'},
     work: ['2500L培养','500L培养','100L培养','WAVE培养','配离心缓冲液','下罐离心','补料A/B配液','纯化','碟片离心','深层过滤','清场记录','收获'],
     rows: []
   };
@@ -194,7 +194,7 @@ function renB(i){
   D.batch[i]=n;save();drawH();msg('已重命名');
 }
 function renH(key){
-  var names={e:'早班',mb:'蓝',mp:'紫',s1:'1:30',s2:'3:30',bn:'大夜',of:'休'};
+  var names={e:'中午值班',mb:'延迟吃饭',mp:'紫',s1:'1:30',s2:'3:30',bn:'大夜',of:'休'};
   var el=$('hdr_'+key);
   var cur=el.textContent;
   var n=prompt('重命名班次：',cur);
