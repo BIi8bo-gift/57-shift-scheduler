@@ -14,13 +14,13 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Roboto","Helvetica Neue","Microsoft YaHei",sans-serif;background:var(--bg);padding:40px 16px 20px;color:var(--text);-webkit-font-smoothing:antialiased}
 h1{font-size:28px;font-weight:700;letter-spacing:-0.02em;margin:4px 0 2px;color:var(--gray-900);line-height:1.15;text-align:center}
-.info{font-size:13px;color:var(--gray-500);margin:0 0 20px;line-height:1.4;text-align:center;letter-spacing:.005em}
+.info{font-size:14px;color:var(--gray-500);margin:0 0 20px;line-height:1.4;text-align:center;letter-spacing:.005em}
 .bar-wrap{background:var(--glass);backdrop-filter:blur(40px) saturate(200%);-webkit-backdrop-filter:blur(40px) saturate(200%);border-radius:14px;padding:10px 12px;margin-bottom:12px;box-shadow:var(--shadow-sm);border:1px solid var(--glass-border)}
 .bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:center}
-.bar label{font-weight:500;font-size:13px;color:var(--gray-500)}
-.inp{height:34px;padding:0 10px;border:1px solid var(--gray-200);border-radius:10px;font-size:14px;font-family:inherit;background:var(--gray-50);transition:border-color 150ms var(--ease-out),box-shadow 150ms var(--ease-out)}
+.bar label{font-weight:500;font-size:14px;color:var(--gray-500)}
+.inp{height:34px;padding:0 10px;border:1px solid var(--gray-200);border-radius:10px;font-size:15px;font-family:inherit;background:var(--gray-50);transition:border-color 150ms var(--ease-out),box-shadow 150ms var(--ease-out)}
 .inp:focus{outline:none;border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(0,122,255,.12)}
-.btn{height:34px;padding:0 14px;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:transform 100ms var(--ease-out),background 150ms var(--ease-out);will-change:transform}
+.btn{height:36px;padding:0 16px;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:transform 100ms var(--ease-out),background 150ms var(--ease-out);will-change:transform}
 .btn:active{transform:scale(.95)}
 .btn-p{background:var(--blue);color:#fff;box-shadow:0 1px 3px rgba(0,122,255,.25)}.btn-p:hover{background:var(--blue-hover)}
 .btn-g{background:var(--green);color:#fff;box-shadow:0 1px 3px rgba(52,199,89,.25)}.btn-g:hover{background:var(--green-hover)}
@@ -28,11 +28,11 @@ h1{font-size:28px;font-weight:700;letter-spacing:-0.02em;margin:4px 0 2px;color:
 .btn-sm{height:30px;padding:0 10px;font-size:12px}
 input[type=checkbox]{width:16px;height:16px;accent-color:var(--blue);cursor:pointer}
 .wrap{background:#fff;border-radius:16px;overflow:auto;margin:0 auto 12px;max-width:1200px;width:100%;box-shadow:var(--shadow-md);max-height:calc(100vh - 200px)}
-table{width:100%;border-collapse:collapse;font-size:14px;font-family:inherit}
+table{width:100%;border-collapse:collapse;font-size:15px;font-family:inherit}
 th,td{padding:12px 10px;text-align:center;vertical-align:middle;border-bottom:1px solid var(--gray-100)}
-th{white-space:nowrap}td{white-space:normal;word-break:break-word;max-width:140px}
+th{white-space:nowrap}td{white-space:normal;word-break:break-word;max-width:160px}
 td:first-child{white-space:nowrap;max-width:none;font-weight:500}
-th{font-size:13px;font-weight:600;padding:9px 8px;color:var(--gray-600);letter-spacing:.02em;background:var(--gray-50);position:sticky;top:0;z-index:20;border-top:none}
+th{font-size:14px;font-weight:600;padding:10px 10px;color:var(--gray-600);letter-spacing:.02em;background:var(--gray-50);position:sticky;top:0;z-index:20;border-top:none}
 tr:last-child td{border-bottom:none}
 /* 选择模式 - 默认隐藏复选框列 */
 .cbtd,.cbth{display:none}
@@ -44,18 +44,18 @@ body.selmode th:nth-child(2){position:sticky;left:30px;z-index:10;min-width:105p
 .rn:hover{color:var(--blue);border-color:var(--blue)}
 .cl{cursor:pointer;min-height:34px;line-height:1.6;transition:background 120ms var(--ease-out);border-radius:4px}
 @media(hover:hover){.cl:hover{background:var(--gray-50)!important}}
-.tg{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;margin:1px;white-space:nowrap;font-weight:500;line-height:1.4;letter-spacing:.01em}
+.tg{display:inline-block;padding:4px 10px;border-radius:6px;font-size:13px;margin:2px;white-space:nowrap;font-weight:500;line-height:1.4;letter-spacing:.01em}
 .tg-force{background:var(--red)!important;color:#fff!important;font-weight:600!important}
-.msg{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:rgba(0,0,0,.8);color:#fff;backdrop-filter:blur(20px);padding:12px 24px;border-radius:14px;font-size:14px;font-weight:500;z-index:300;opacity:0;pointer-events:none;font-family:inherit;box-shadow:0 4px 20px rgba(0,0,0,.15);transition:opacity 200ms var(--ease-out),transform 200ms var(--ease-out)}
+.msg{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:rgba(0,0,0,.8);color:#fff;backdrop-filter:blur(20px);padding:14px 28px;border-radius:14px;font-size:15px;font-weight:500;z-index:300;opacity:0;pointer-events:none;font-family:inherit;box-shadow:0 4px 20px rgba(0,0,0,.15);transition:opacity 200ms var(--ease-out),transform 200ms var(--ease-out)}
 .msg.sh{opacity:1;transform:translateX(-50%) translateY(0)}
 .m{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.3);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity 280ms var(--ease-out)}
 .m.s{opacity:1;pointer-events:auto}
 .md{background:var(--glass-strong);backdrop-filter:blur(40px) saturate(200%);-webkit-backdrop-filter:blur(40px) saturate(200%);border-radius:18px;padding:16px;width:360px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);border:1px solid var(--glass-border);transform:scale(.92) translateY(20px);transition:transform 320ms var(--ease-out),opacity 280ms var(--ease-out);opacity:0}
 .m.s .md{transform:scale(1) translateY(0);opacity:1}
-.md h3{font-size:15px;margin-bottom:2px;color:var(--gray-800)}
-.md .h{font-size:12px;color:var(--gray-400);margin-bottom:8px}
+.md h3{font-size:16px;margin-bottom:2px;color:var(--gray-800)}
+.md .h{font-size:13px;color:var(--gray-400);margin-bottom:8px}
 .md .g{display:flex;flex-wrap:wrap;gap:4px;overflow-y:auto;max-height:260px;padding:4px 0}
-.md .g>div{padding:5px 12px;border-radius:20px;border:1.5px solid var(--gray-200);font-size:13px;cursor:pointer;user-select:none;transition:all 100ms var(--ease-out);color:var(--gray-700)}
+.md .g>div{padding:7px 14px;border-radius:20px;border:1.5px solid var(--gray-200);font-size:14px;cursor:pointer;user-select:none;transition:all 100ms var(--ease-out);color:var(--gray-700)}
 .md .g>div:active{transform:scale(.95)}
 .md .g>div:hover{background:var(--gray-50);border-color:var(--gray-300)}
 .md .g .s{background:var(--blue)!important;border-color:var(--blue)!important;color:#fff!important;font-weight:500!important}
@@ -64,7 +64,7 @@ body.selmode th:nth-child(2){position:sticky;left:30px;z-index:10;min-width:105p
 .md .g .fd{opacity:.45;cursor:pointer;border-style:dashed!important;border-color:var(--red)!important;color:var(--red)!important}
 .md .g .fd:hover{opacity:1;background:rgba(255,59,48,.06)}
 .md .ab{display:flex;gap:6px;margin-top:8px}
-.md .ab input{flex:1;height:32px;padding:0 10px;border:1px solid var(--gray-200);border-radius:10px;font-size:13px;font-family:inherit;background:var(--gray-50);transition:border-color 150ms var(--ease-out)}
+.md .ab input{flex:1;height:34px;padding:0 10px;border:1px solid var(--gray-200);border-radius:10px;font-size:14px;font-family:inherit;background:var(--gray-50);transition:border-color 150ms var(--ease-out)}
 .md .ab input:focus{outline:none;border-color:var(--blue)}
 .md .bt{display:flex;gap:8px;margin-top:10px;justify-content:flex-end;border-top:1px solid var(--gray-100);padding-top:9px}
 </style>
@@ -86,6 +86,14 @@ body.selmode th:nth-child(2){position:sticky;left:30px;z-index:10;min-width:105p
   <button class="btn btn-o btn-sm" onclick="mgr('people')">人员</button>
   <button class="btn btn-o btn-sm" onclick="mgr('work')">工作</button>
   <button class="btn btn-o btn-sm" onclick="mgr('batch')">批号</button>
+  <select id="monthSel" class="inp" style="width:110px" onchange="switchMonth(this.value)">
+    <option value="">全部月份</option>
+  </select>
+  <button class="btn btn-o btn-sm" onclick="showStats()">统计</button>
+  <button class="btn btn-o btn-sm" style="color:var(--red);border-color:var(--red)" onclick="clearMonth()">清空本月</button>
+  <select id="personFilter" class="inp" style="width:110px" onchange="setPersonFilter(this.value)">
+    <option value="">全部人员</option>
+  </select>
   <span style="font-size:12px;color:var(--gray-400)" id="st"></span>
   <span style="font-size:12px;color:var(--gray-400)" id="rangeInfo"></span>
 </div>
@@ -133,8 +141,7 @@ body.selmode th:nth-child(2){position:sticky;left:30px;z-index:10;min-width:105p
   </div>
 </div>
 
-<!-- SheetJS still available for future use, but export now uses server-side openpyxl -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script>
 'use strict';
 
@@ -268,17 +275,22 @@ function delSel(){
 var _firstRender = true;
 function render(){
   drawH();
+  updateMonths();
+  updatePersonFilter();
   var tb = $('tb');
-  if(!D.rows.length){
-    tb.innerHTML='<tr><td colspan="12" style="padding:24px;color:var(--gray-400);font-size:13px">选日期 → 添加</td></tr>';
-    $('st').textContent='';
+  var filtered = getFilteredRows();
+  if(!filtered.length){
+    tb.innerHTML='<tr><td colspan="12" style="padding:24px;color:var(--gray-400);font-size:13px">没有数据 (D.rows='+D.rows.length+', curMonth='+_curMonth+', filter='+_filterPerson+')</td></tr>';
+    $('st').textContent='0行';
     return;
   }
+  var lookup={}; for(var i=0;i<D.rows.length;i++) lookup[D.rows[i].d]=i;
   var h = '';
-  for(var i=0;i<D.rows.length;i++){
-    var r = D.rows[i];
-    var delay = i*25;
-    var checked = _sel[i] ? ' checked' : '';
+  for(var di=0;di<filtered.length;di++){
+    var ri = lookup[filtered[di].d];
+    var r = D.rows[ri];
+    var delay = di*25;
+    var checked = _sel[ri] ? ' checked' : '';
     
     // 构建每列
     function tg(n,c){ return '<span class="tg" style="background:'+c+'">'+esc(n)+'</span>'; }
@@ -286,29 +298,28 @@ function render(){
     function wCell(k, bg, ci){
       var arr = r[k]||[];
       var txt = arr.length ? arr.map(function(x){return tg(x,bg);}).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl" style="background:'+bg+'" onclick="pkW('+i+','+ci+')">'+txt+'</td>';
+      return '<td class="cl" style="background:'+bg+'" onclick="pkW('+ri+','+ci+')">'+txt+'</td>';
     }
-    
     function pCell(k, bg){
       var arr = r[k]||[];
       var txt = arr.length ? arr.map(function(x){
         var c = x.f ? 'var(--red)' : bg;
         return tg(x.n, c);
       }).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl" style="background:'+bg+'" onclick="pkP('+i+',\''+k+'\')">'+txt+'</td>';
+      return '<td class="cl" style="background:'+bg+'" onclick="pkP('+ri+',\''+k+'\')">'+txt+'</td>';
     }
     
-    var animStyle = _firstRender ? 'animation:rowIn 250ms var(--ease-out) both;animation-delay:'+delay+'ms;' : '';
-    h += '<tr style="'+animStyle+'">';
-    h += '<td class="cbtd"><input type="checkbox" onchange="toggleSel('+i+')"'+checked+'></td>';
-    h += '<td style="position:sticky;left:0;z-index:5;background:#fff;min-width:105px;white-space:nowrap">'+esc(r.d)+'</td>';
+    var animStyle = _firstRender ? 'animation:rowIn 250ms var(--ease-out) both;animation-delay:'+(di*25)+'ms;' : '';
+    h += '<tr style="'+animStyle+'" oncontextmenu="delRow('+ri+');return false">';
+    h += '<td class="cbtd"><input type="checkbox" onchange="toggleSel('+ri+')"'+checked+'></td>';
+    h += '<td style="position:sticky;left:0;z-index:5;background:#fff;min-width:105px;white-space:nowrap" oncontextmenu="delRow('+ri+');return false">'+esc(r.d)+'</td>';
     h += wCell('w0','#dcfce7',0)+wCell('w1','#dbeafe',1)+wCell('w2','#fef9c3',2);
     h += pCell('e','#dbeafe')+pCell('mb','#93c5fd')+pCell('mp','#a78bfa');
     h += pCell('s1','#fef9c3')+pCell('s2','#fde68a')+pCell('bn','#fce7f3')+pCell('of','#f1f5f9');
     h += '</tr>';
   }
   tb.innerHTML = h;
-  $('st').textContent = D.rows.length+'行';
+  $('st').textContent = filtered.length+'行 (全部'+D.rows.length+'行)';
   updateSelUI();
   _firstRender = false;
 }
@@ -457,7 +468,14 @@ function mdAdd(){
 }
 function mdOk(){ save(); mdClose(); render(); }
 function mdCancel(){ mdClose(); }
-function mdClose(){ $('mx').className='m'; _ctx=null; _mgr=null; }
+function mdClose(){
+  $('mx').className='m'; _ctx=null; _mgr=null;
+  $('mxn').style.display='';
+  var ab=$('mx').querySelector('.ab'); if(ab)ab.style.display='';
+  $('mxg').style.maxHeight='260px';
+  var bt=$('mx').querySelector('.bt');
+  if(bt) bt.innerHTML='<button class="btn btn-o" onclick="mdCancel()">取消</button><button class="btn btn-p" onclick="mdOk()">确定</button>';
+}
 
 // ===== 管理弹窗（人员/工作/批号） =====
 function mgr(mode){
@@ -480,110 +498,283 @@ function mdDel(i){
 }
 
 // ===== 导出（8列正确格式） =====
-function exp(){
-  if(!D.rows.length){ msg('无数据'); return; }
-  
-  var shiftKeys = ['e','mb','mp','s1','s2','bn','of'];
-  var shiftDefaultNames = {e:'早班',mb:'蓝',mp:'紫',s1:'1:30',s2:'3:30',bn:'大夜',of:'休'};
-  
-  // Map shift column key to export group based on header name
-  function getShiftGroup(k){
-    var name = (D.colHeaders&&D.colHeaders[k]) || shiftDefaultNames[k] || k;
-    if(name.indexOf('早')>=0 || name==='e') return 'morning';
-    if(name.indexOf('小夜')>=0 || name==='mb' || name==='mp' || name==='s1' || name==='s2') return 'evening';
-    if(name.indexOf('大夜')>=0 || name==='bn') return 'night';
-    if(name.indexOf('休')>=0 || name==='of') return 'off';
+// ===== 筛选 =====
+var _curMonth='';
+var _filterPerson='';
+function getMonths(){
+  var m={};
+  for(var i=0;i<D.rows.length;i++){ var k=D.rows[i].d.substring(0,7); m[k]=true; }
+  return Object.keys(m).sort();
+}
+function updateMonths(){
+  var sel=$('monthSel'); if(!sel) return;
+  var months=getMonths();
+  var cur=sel.value;
+  sel.innerHTML='<option value="">全部月份</option>';
+  months.forEach(function(m){
+    var o=document.createElement('option');
+    o.value=m; o.textContent=m.replace('/','年')+'月'; sel.appendChild(o);
+  });
+  if(cur) sel.value=cur;
+  _curMonth=sel.value||'';
+}
+function switchMonth(m){ _curMonth=m; render(); }
+function updatePersonFilter(){
+  var sel=$('personFilter'); if(!sel) return;
+  var cur=sel.value;
+  sel.innerHTML='<option value="">全部人员</option>';
+  D.people.forEach(function(n){
+    var o=document.createElement('option');
+    o.value=n; o.textContent=n; sel.appendChild(o);
+  });
+  if(cur) sel.value=cur;
+  _filterPerson=sel.value;
+}
+function setPersonFilter(name){
+  _filterPerson=name;
+  var sel=$('personFilter');
+  if(sel) sel.value=name;
+  render();
+}
+function clearFilter(){
+  _filterPerson='';
+  var sel=$('personFilter');
+  if(sel) sel.value='';
+  render();
+}
+function getFilteredRows(){
+  return D.rows.filter(function(r){
+    if(!r) return false;
+    if(_curMonth && r.d && r.d.indexOf(_curMonth)!==0) return false;
+    if(_filterPerson){
+      var ks=['e','mb','mp','s1','s2','bn','of'];
+      for(var k=0;k<ks.length;k++){
+        if((r[ks[k]]||[]).some(function(x){ return (typeof x==='object'?x.n:x)===_filterPerson; })) return true;
+      }
+      return false;
+    }
+    return true;
+  });
+}
+
+// ===== 统计 =====
+function buildStats(){
+  var stats={};
+  D.people.forEach(function(n){ stats[n]={morning:0,evening:0,night:0,off:0}; });
+  var shiftKeys=['e','mb','mp','s1','s2','bn','of'];
+  var defs={e:'早班',mb:'蓝',mp:'紫',s1:'1:30',s2:'3:30',bn:'大夜',of:'休'};
+  function grp(k){
+    var n=(D.colHeaders&&D.colHeaders[k])||defs[k]||k;
+    if(n.indexOf('早')>=0||k==='e') return 'morning';
+    if(n.indexOf('小夜')>=0||k==='mb'||k==='mp'||k==='s1'||k==='s2') return 'evening';
+    if(n.indexOf('大夜')>=0||k==='bn') return 'night';
+    if(n.indexOf('休')>=0||k==='of') return 'off';
     return 'morning';
   }
-  
-  function fmtPeople(arr){
-    if(!arr||!arr.length) return '';
-    return arr.map(function(p){
-      if(typeof p==='object'){
-        return p.f ? (p.n + '(强)') : p.n;
-      }
-      return String(p);
-    }).join('、');
-  }
-  
-  function jnWork(arr){
-    if(!arr||!arr.length) return '';
-    // Format: if item contains parens, keep; else join with newline
-    return arr.join('\n');
-  }
-  
-  // Batch column names (what user sees in the table headers)
-  var batchNames = [
-    D.batch[0] || '批号1',
-    D.batch[1] || '批号2',
-    D.batch[2] || '批号3'
-  ];
-  
-  // Build export rows - one per date, 8 columns
-  var exportRows = [];
   for(var i=0;i<D.rows.length;i++){
-    var r = D.rows[i];
-    
-    // Three batch columns: w0, w1, w2
-    var b1 = jnWork(r.w0||[]);
-    var b2 = jnWork(r.w1||[]);
-    var b3 = jnWork(r.w2||[]);
-    
-    // Collect people by shift group
-    var groups = {morning:[], evening:[], night:[], off:[]};
+    var r=D.rows[i]; if(!r) continue;
     shiftKeys.forEach(function(k){
-      var g = getShiftGroup(k);
       (r[k]||[]).forEach(function(p){
-        var name = (typeof p==='object') ? p.n+(p.f?'(强)':'') : String(p);
-        if(groups[g]) groups[g].push(name);
+        var nm=typeof p==='object'?p.n:p;
+        if(stats[nm]) stats[nm][grp(k)]++;
       });
     });
-    
-    exportRows.push({
-      date: r.d,
-      batch1: b1,
-      batch2: b2,
-      batch3: b3,
-      morning: groups.morning.join('、'),
-      evening: groups.evening.join('、'),
-      night: groups.night.join('、'),
-      off: groups.off.join('、'),
-    });
   }
-  
-  // Build payload
-  var dates = D.rows.map(function(r){ return r.d; });
-  var payload = {
-    batchLabel: '57车间排班表',
-    batchNames: batchNames,
-    dateRange: (dates.length ? dates[0] + ' ~ ' + dates[dates.length-1] : ''),
-    rows: exportRows,
-    summaryText: '57车间 ' + (dates.length||0) + ' 个工作日',
-  };
-  
-  // POST to /export
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', '/export', true);
-  xhr.responseType = 'blob';
-  xhr.onload = function(){
-    if(xhr.status === 200){
-      var blob = xhr.response;
-      var url = window.URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = '57车间排班表.xlsx';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-      msg('导出成功');
-    } else {
-      msg('导出失败: '+xhr.status);
-    }
-  };
-  xhr.onerror = function(){ msg('导出失败，网络错误'); };
-  xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.send(JSON.stringify(payload));
+  return stats;
+}
+function showStats(){
+  var stats=buildStats();
+  var names=Object.keys(stats).filter(function(n){return D.people.indexOf(n)>=0;}).sort();
+  var h='<table style="font-size:13px;width:100%;border-collapse:collapse">';
+  h+='<tr><th style="text-align:left;padding:4px 8px;border-bottom:1px solid var(--gray-200)">姓名</th>';
+  h+='<th style="padding:4px 8px;border-bottom:1px solid var(--gray-200)">早班</th>';
+  h+='<th style="padding:4px 8px;border-bottom:1px solid var(--gray-200)">小夜</th>';
+  h+='<th style="padding:4px 8px;border-bottom:1px solid var(--gray-200)">大夜</th>';
+  h+='<th style="padding:4px 8px;border-bottom:1px solid var(--gray-200)">休</th>';
+  h+='<th style="padding:4px 8px;border-bottom:1px solid var(--gray-200)">合计</th></tr>';
+  names.forEach(function(n){
+    var s=stats[n]; var total=s.morning+s.evening+s.night+s.off;
+    h+='<tr style="cursor:pointer" onclick="setPersonFilter(\''+esc(n)+'\');mdClose()">';
+    h+='<td style="padding:4px 8px;border-bottom:1px solid var(--gray-100);font-weight:500">'+esc(n)+'</td>';
+    h+='<td style="padding:4px 8px;border-bottom:1px solid var(--gray-100);text-align:center">'+s.morning+'</td>';
+    h+='<td style="padding:4px 8px;border-bottom:1px solid var(--gray-100);text-align:center">'+s.evening+'</td>';
+    h+='<td style="padding:4px 8px;border-bottom:1px solid var(--gray-100);text-align:center">'+s.night+'</td>';
+    h+='<td style="padding:4px 8px;border-bottom:1px solid var(--gray-100);text-align:center">'+s.off+'</td>';
+    h+='<td style="padding:4px 8px;border-bottom:1px solid var(--gray-100);text-align:center;font-weight:600">'+total+'</td></tr>';
+  });
+  h+='</table>';
+  $('mxt').textContent='出勤统计';
+  $('mxh').textContent='点击人名可筛选查看该人排班';
+  $('mxg').innerHTML=h;
+  $('mxg').style.maxHeight='60vh';
+  $('mxn').style.display='none';
+  $('mx').querySelector('.ab').style.display='none';
+  var bt=$('mx').querySelector('.bt');
+  bt.innerHTML='<button class="btn btn-o" onclick="clearFilter();mdClose()">清除筛选</button><button class="btn btn-p" onclick="mdClose()">关闭</button>';
+  $('mx').className='m s';
+}
+
+// ===== 快速删除 =====
+function delRow(ri){
+  if(!confirm('删除 '+D.rows[ri].d+' 这条？')) return;
+  D.rows.splice(ri,1);
+  _sel={};
+  save();render();msg('已删除');
+}
+function clearMonth(){
+  var sel=$('monthSel'); if(!sel) return;
+  var m=sel.value;
+  if(!m){ msg('先选月份'); return; }
+  var cnt=D.rows.filter(function(r){return r.d && r.d.indexOf(m)===0;}).length;
+  if(!cnt){ msg('本月无数据'); return; }
+  if(!confirm('清空 '+m.replace('/','年')+'月 全部 '+cnt+' 条排班？不可恢复！')) return;
+  for(var i=D.rows.length-1;i>=0;i--){
+    if(D.rows[i] && D.rows[i].d && D.rows[i].d.indexOf(m)===0) D.rows.splice(i,1);
+  }
+  _sel={};
+  save();render();msg('已清空');
+}
+
+// ===== 导出（ExcelJS纯前端） =====
+function exp(){
+  if(!D.rows.length){ msg('无数据'); return; }
+
+  var shiftKeys=['e','mb','mp','s1','s2','bn','of'];
+  var defs={e:'早班',mb:'蓝',mp:'紫',s1:'1:30',s2:'3:30',bn:'大夜',of:'休'};
+
+  function grp(k){
+    var n=(D.colHeaders&&D.colHeaders[k])||defs[k]||k;
+    if(n.indexOf('早')>=0||k==='e') return 'morning';
+    if(n.indexOf('小夜')>=0||k==='mb'||k==='mp'||k==='s1'||k==='s2') return 'evening';
+    if(n.indexOf('大夜')>=0||k==='bn') return 'night';
+    if(n.indexOf('休')>=0||k==='of') return 'off';
+    return 'morning';
+  }
+  function buildRow(r){
+    var b1=(r.w0||[]).join('\n'), b2=(r.w1||[]).join('\n'), b3=(r.w2||[]).join('\n');
+    var gs={morning:[],evening:[],night:[],off:[]};
+    shiftKeys.forEach(function(k){
+      (r[k]||[]).forEach(function(p){
+        var nm=(typeof p==='object')?p.n+(p.f?'(强)':''):String(p);
+        if(gs[grp(k)]) gs[grp(k)].push(nm);
+      });
+    });
+    return [r.d,b1,b2,b3,gs.morning.join('、'),gs.evening.join('、'),gs.night.join('、'),gs.off.join('、')];
+  }
+
+  var bN=[D.batch[0]||'批号1',D.batch[1]||'批号2',D.batch[2]||'批号3'];
+  var mRows={};
+  D.rows.forEach(function(r){
+    var mk=r.d.substring(0,7);
+    if(!mRows[mk]) mRows[mk]=[];
+    mRows[mk].push(buildRow(r));
+  });
+  var months=Object.keys(mRows).sort();
+
+  var wb=new ExcelJS.Workbook();
+  wb.creator='57车间';
+
+  var hdrFill={type:'pattern',pattern:'solid',fgColor:{argb:'FF007AFF'}};
+  var hdrFont={name:'Microsoft YaHei',bold:true,size:11,color:{argb:'FFFFFFFF'}};
+  var titleFont={name:'Microsoft YaHei',bold:true,size:14};
+  var noteFont={name:'Microsoft YaHei',size:9,italic:true,color:{argb:'FF8E8E93'}};
+  var dataFont={name:'Microsoft YaHei',size:10};
+  var boldFont={name:'Microsoft YaHei',bold:true,size:10};
+  var batchFills=[{type:'pattern',pattern:'solid',fgColor:{argb:'FFD5F5E3'}},{type:'pattern',pattern:'solid',fgColor:{argb:'FFD6E4F0'}},{type:'pattern',pattern:'solid',fgColor:{argb:'FFFEF9C3'}}];
+  var thin={style:'thin',color:{argb:'FF000000'}};
+  var borderAll={top:thin,left:thin,bottom:thin,right:thin};
+  var center={horizontal:'center',vertical:'center',wrapText:true};
+  var leftWrap={horizontal:'left',vertical:'center',wrapText:true};
+
+  months.forEach(function(mk){
+    var rows=mRows[mk];
+    var dateRange=rows[0][0]+' ~ '+rows[rows.length-1][0];
+    var ws=wb.addWorksheet(mk.replace('/','-'));
+    [16,36,36,36,30,30,30,16].forEach(function(w,i){ ws.getColumn(i+1).width=w; });
+
+    ws.mergeCells(1,1,1,8);
+    var c1=ws.getCell('A1');
+    c1.value='57车间排班表 ('+mk+')'; c1.font=titleFont; c1.alignment=center;
+    ws.getRow(1).height=38;
+
+    ws.mergeCells(2,1,2,8);
+    var c2=ws.getCell('A2');
+    c2.value='周期: '+dateRange; c2.font=noteFont;
+    c2.alignment={horizontal:'left',vertical:'center'};
+    ws.getRow(2).height=22;
+
+    var hdrs=['日期',bN[0],bN[1],bN[2],'早班人员','小夜班人员','大夜班人员','休班人员'];
+    var hr=ws.getRow(3); hr.height=30;
+    hdrs.forEach(function(h,i){
+      var cell=hr.getCell(i+1);
+      cell.value=h; cell.font=hdrFont; cell.fill=hdrFill;
+      cell.alignment=center; cell.border=borderAll;
+    });
+
+    rows.forEach(function(vals,idx){
+      var rn=4+idx;
+      var row=ws.getRow(rn); row.height=72;
+      vals.forEach(function(v,i){
+        var cell=row.getCell(i+1);
+        cell.value=v; cell.font=dataFont; cell.border=borderAll;
+        cell.alignment=i===0?center:leftWrap;
+        if(i>=1&&i<=3) cell.fill=batchFills[i-1];
+      });
+    });
+
+    var sr=4+rows.length;
+    ws.mergeCells(sr,1,sr,4);
+    var sc=ws.getCell(sr,1);
+    sc.value='合计'; sc.font=boldFont; sc.alignment=center; sc.border=borderAll;
+    for(var i=2;i<=8;i++){ ws.getCell(sr,i).border=borderAll; }
+    var sc5=ws.getCell(sr,5);
+    sc5.value=mk+' -- '+rows.length+' 个工作日';
+    sc5.font=dataFont; sc5.alignment=leftWrap; sc5.border=borderAll;
+    ws.getRow(sr).height=25;
+
+    ws.pageSetup.orientation='landscape';
+    ws.pageSetup.fitToPage=true;
+    ws.pageSetup.fitToWidth=1; ws.pageSetup.fitToHeight=0;
+  });
+
+  var stats=buildStats();
+  var names=Object.keys(stats).filter(function(n){return D.people.indexOf(n)>=0;}).sort();
+  var wsS=wb.addWorksheet('出勤统计');
+  [12,8,8,8,8,8].forEach(function(w,i){ wsS.getColumn(i+1).width=w; });
+
+  wsS.mergeCells(1,1,1,6);
+  var st=wsS.getCell('A1');
+  st.value='出勤统计'; st.font=titleFont; st.alignment=center;
+  wsS.getRow(1).height=38;
+
+  var sHdrs=['姓名','早班','小夜班','大夜班','休班','合计'];
+  var sr2=wsS.getRow(2); sr2.height=26;
+  sHdrs.forEach(function(h,i){
+    var cell=sr2.getCell(i+1);
+    cell.value=h; cell.font=hdrFont; cell.fill=hdrFill;
+    cell.alignment=center; cell.border=borderAll;
+  });
+
+  names.forEach(function(n,idx){
+    var rn=3+idx;
+    var row=wsS.getRow(rn); row.height=22;
+    var s=stats[n];
+    var vals=[n,s.morning||0,s.evening||0,s.night||0,s.off||0,s.morning+s.evening+s.night+s.off];
+    vals.forEach(function(v,i){
+      var cell=row.getCell(i+1);
+      cell.value=v; cell.font=dataFont; cell.border=borderAll; cell.alignment=center;
+    });
+  });
+
+  wb.xlsx.writeBuffer().then(function(buf){
+    var blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    var url=window.URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;a.download='57车间排班表.xlsx';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    msg('导出成功');
+  }).catch(function(e){ msg('导出失败'); console.error(e); });
 }
 
 $('d').value = today();
