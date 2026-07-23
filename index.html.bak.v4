@@ -264,7 +264,7 @@ h1{
   font-size:2rem;
   font-weight:800;
   letter-spacing:-.03em;
-  margin:0 0 var(--sp-2);
+  margin:0 0 var(--sp-1);
   color:var(--gray-900);
   line-height:1.1;
   text-align:center;
@@ -411,7 +411,7 @@ input[type=checkbox]{
 .wrap{
   background:var(--surface);
   border-radius:var(--r-lg);
-  overflow:auto;
+  overflow:hidden;
   margin:0 auto var(--sp-4);
   max-width:1200px;width:100%;
   box-shadow:var(--shadow-md);
@@ -670,7 +670,7 @@ body > div:last-of-type.bar .btn-g{
   h1{font-size:1.5rem}
   .bar-wrap{padding:var(--sp-3);border-radius:var(--r-md)}
   .bar{gap:var(--sp-1)}
-  .wrap{border-radius:var(--r-md);max-height:calc(100vh - 180px);overflow:auto}
+  .wrap{border-radius:var(--r-md);max-height:calc(100vh - 180px)}
   table{font-size:.8125rem}
   th,td{padding:8px 6px}
   .md{width:calc(100vw - 32px);padding:var(--sp-4);border-radius:var(--r-lg)}
@@ -694,7 +694,7 @@ th[style*="color:#fff"]{color:#fff!important}
 <div class="workshop-watermark left">制药</div>
 <div style="max-width:1100px;margin:0 auto;margin-bottom:var(--sp-4)">
 <h1>新时代药业 · 57车间排班表</h1>
-<div class="info">选择日期 → 添加人员 → 点击格子排班 · 双击强制 · 灰色为已排他班</div>
+<div class="info">制药精工设计系统 v3 · 选日期→添加→点击格子选择<br class="mob">灰色=已排他班·双击强制·红色标记</div>
 
 <div class="bar-wrap">
 <div class="bar">
@@ -726,16 +726,16 @@ th[style*="color:#fff"]{color:#fff!important}
 <thead><tr>
   <th class="cbth"><input type="checkbox" id="selAll" onchange="toggleAll()"></th>
   <th style="width:105px;min-width:105px;background:var(--gray-50);position:sticky;left:0;z-index:10">日期</th>
-  <th style="background:#dcfce7" id="h0">LNF2529</th>
-  <th style="background:#dbeafe" id="h1">利妥昔</th>
-  <th style="background:#fef9c3" id="h2">LNF2501</th>
+  <th style="background:#dcfce7" id="h0">批1</th>
+  <th style="background:#dbeafe" id="h1">批2</th>
+  <th style="background:#fef9c3" id="h2">批3</th>
   <th style="background:#dbeafe"><span class="rn" onclick="renH('e')" id="hdr_e">早班</span></th>
-  <th style="background:#93c5fd"><span class="rn" onclick="renH('mb')" id="hdr_mb">中午值班</span></th>
-  <th style="background:#a78bfa;color:#fff"><span class="rn" onclick="renH('mp')" id="hdr_mp">延迟吃饭</span></th>
-  <th style="background:#fef9c3"><span class="rn" onclick="renH('s1')" id="hdr_s1">小夜1:30</span></th>
-  <th style="background:#fde68a"><span class="rn" onclick="renH('s2')" id="hdr_s2">小夜3:30</span></th>
+  <th style="background:#93c5fd"><span class="rn" onclick="renH('mb')" id="hdr_mb">蓝</span></th>
+  <th style="background:#a78bfa;color:#fff"><span class="rn" onclick="renH('mp')" id="hdr_mp">紫</span></th>
+  <th style="background:#fef9c3"><span class="rn" onclick="renH('s1')" id="hdr_s1">1:30</span></th>
+  <th style="background:#fde68a"><span class="rn" onclick="renH('s2')" id="hdr_s2">3:30</span></th>
   <th style="background:#fce7f3"><span class="rn" onclick="renH('bn')" id="hdr_bn">大夜</span></th>
-  <th style="background:#f1f5f9"><span class="rn" onclick="renH('of')" id="hdr_of">休班</span></th>
+  <th style="background:#f1f5f9"><span class="rn" onclick="renH('of')" id="hdr_of">休</span></th>
 </tr></thead>
 <tbody id="tb"></tbody>
 </table>
@@ -744,7 +744,6 @@ th[style*="color:#fff"]{color:#fff!important}
 <div style="max-width:1100px;margin:0 auto" class="bar">
   <span style="font-size:12px;color:var(--text-muted)" id="selInfo"></span>
   <button class="btn btn-g" onclick="exp()">📥 导出 Excel</button>
-  <button class="btn btn-p" onclick="expPDF()" style="margin-left:6px">📄 导出 PDF</button>
   <button class="btn btn-o btn-sm" id="btnDelSel" onclick="delSel()" style="display:none">🗑️ 删选中</button>
 </div>
 
@@ -769,99 +768,19 @@ th[style*="color:#fff"]{color:#fff!important}
 
 var D = {people:[], batch:[], work:[], rows:[]};
 
-// ===== 云端存储 (jsonblob.com) =====
-var CLOUD_URL = 'https://jsonblob.com/api/jsonBlob/';
-var CLOUD_BLOB_ID = '019f8f85-33d8-7724-b8c7-6a0fa4ff566e';
-
-function getBlobId() {
-  return localStorage.getItem('s57blob') || CLOUD_BLOB_ID;
-}
-
-function cloudSave() {
-  var blobId = getBlobId();
-  fetch(CLOUD_URL + blobId, {
-    method: 'PUT',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({data: D, ts: Date.now()})
-  }).then(function(r) {
-    if (r.status === 404 || r.status === 410) {
-      // Blob过期，创建新的
-      return fetch(CLOUD_URL, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({data: D, ts: Date.now()})
-      }).then(function(r2) {
-        var loc = r2.headers.get('Location');
-        if (loc) {
-          var newId = loc.split('/').pop();
-          localStorage.setItem('s57blob', newId);
-        }
-      });
-    }
-  }).catch(function(){});
-}
-
-function cloudLoad(cb) {
-  var blobId = getBlobId();
-  fetch(CLOUD_URL + blobId).then(function(r) {
-    if (!r.ok) throw new Error('not found');
-    return r.json();
-  }).then(function(data) {
-    if (data && data.data && data.data.people) {
-      cb(data.data, data.ts || 0);
-    }
-  }).catch(function(){});
-}
-
 function initD() {
   try { var r = localStorage.getItem('s57v2'); if (r) { var d = JSON.parse(r); if (d && d.people) { D = d; if(!D.colHeaders) D.colHeaders={}; return; } } } catch(e){}
   D = {
     people: ['王征征','林新燕','王晓龙','李振','王学灵','崔国干','常远','孙文斌','朱庆强','张峰','毛志琛'],
     batch: ['LNF2529','利妥昔','LNF2501'],
-    colHeaders: {e:'早班',mb:'中午值班',mp:'延迟吃饭',s1:'小夜1:30',s2:'小夜3:30',bn:'大夜',of:'休班'},
+    colHeaders: {e:'早班',mb:'中午值班',mp:'延迟吃饭',s1:'小夜1:30',s2:'小夜3:30'},
     work: ['2500L培养','500L培养','100L培养','WAVE培养','配离心缓冲液','下罐离心','补料A/B配液','纯化','碟片离心','深层过滤','清场记录','收获'],
     rows: []
   };
 }
 initD();
 
-function save() {
-  try { localStorage.setItem('s57v2', JSON.stringify(D)); localStorage.setItem('s57ts', String(Date.now())); } catch(e){}
-  // 自动保存到云端（防抖）
-  if(window._saveTimer) clearTimeout(window._saveTimer);
-  window._saveTimer=setTimeout(cloudSave, 500);
-}
-
-// 页面加载时：localStorage优先，没有数据再从云端恢复
-(function(){
-  var hasLocal=false;
-  try { hasLocal=!!localStorage.getItem('s57v2'); } catch(e){}
-  if(hasLocal) {
-    // 有本地数据，后台静默同步云端（如果有更新的数据）
-    cloudLoad(function(data, cloudTs){
-      var localTs = parseInt(localStorage.getItem('s57ts') || '0');
-      if (cloudTs > localTs) {
-        D = data;
-        if(!D.colHeaders) D.colHeaders={};
-        localStorage.setItem('s57v2', JSON.stringify(D));
-        localStorage.setItem('s57ts', String(cloudTs));
-        render();
-        msg('已同步云端最新数据');
-      }
-    });
-    return;
-  }
-
-  // 首次访问或无本地数据，尝试从云端恢复
-  cloudLoad(function(data, cloudTs){
-    D=data;
-    if(!D.colHeaders) D.colHeaders={};
-    localStorage.setItem('s57v2', JSON.stringify(D));
-    localStorage.setItem('s57ts', String(cloudTs));
-    render();
-    msg('已恢复云端保存的数据');
-  });
-})();
+function save() { try { localStorage.setItem('s57v2', JSON.stringify(D)); } catch(e){} }
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function today(){var t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')}
@@ -896,7 +815,7 @@ function renB(i){
   D.batch[i]=n;save();drawH();msg('已重命名');
 }
 function renH(key){
-  var names={e:'早班',mb:'中午值班',mp:'延迟吃饭',s1:'小夜1:30',s2:'小夜3:30',bn:'大夜',of:'休班'};
+  var names={e:'早班',mb:'中午值班',mp:'延迟吃饭',s1:'小夜1:30',s2:'小夜3:30',bn:'大夜',of:'休'};
   var el=$('hdr_'+key);
   var cur=el.textContent;
   var n=prompt('重命名班次：',cur);
@@ -1105,7 +1024,7 @@ function pkP(ri, key){
   var cur = r[key]||[];
   var ns = {};
   var keys=['e','mb','mp','s1','s2','bn','of'];
-  var defs={e:'早班',mb:'中午值班',mp:'延迟吃饭',s1:'小夜1:30',s2:'小夜3:30',bn:'大夜',of:'休班'};
+  var defs={e:'早班',mb:'蓝',mp:'紫',s1:'1:30',s2:'3:30',bn:'大夜',of:'休'};
   for(var k=0;k<keys.length;k++) ns[keys[k]] = (D.colHeaders&&D.colHeaders[keys[k]]) || defs[keys[k]];
   $('mxt').textContent = r.d+' — '+ns[key];
   $('mxh').textContent = '点击选人·灰色=已排别班可双击强制(红色)';
@@ -1264,7 +1183,7 @@ function buildStats(){
   var stats={};
   D.people.forEach(function(n){ stats[n]={morning:0,evening:0,night:0,off:0}; });
   var shiftKeys=['e','mb','mp','s1','s2','bn','of'];
-  var defs={e:'早班',mb:'中午值班',mp:'延迟吃饭',s1:'小夜1:30',s2:'小夜3:30',bn:'大夜',of:'休班'};
+  var defs={e:'早班',mb:'蓝',mp:'紫',s1:'1:30',s2:'3:30',bn:'大夜',of:'休'};
   function grp(k){
     var n=(D.colHeaders&&D.colHeaders[k])||defs[k]||k;
     if(n.indexOf('早')>=0||k==='e') return 'morning';
@@ -1342,7 +1261,7 @@ function exp(){
   if(!D.rows.length){ msg('无数据'); return; }
 
   var shiftKeys=['e','mb','mp','s1','s2','bn','of'];
-  var defs={e:'早班',mb:'中午值班',mp:'延迟吃饭',s1:'小夜1:30',s2:'小夜3:30',bn:'大夜',of:'休班'};
+  var defs={e:'早班',mb:'蓝',mp:'紫',s1:'1:30',s2:'3:30',bn:'大夜',of:'休'};
 
   function grp(k){
     var n=(D.colHeaders&&D.colHeaders[k])||defs[k]||k;
@@ -1415,21 +1334,7 @@ function exp(){
 
     rows.forEach(function(vals,idx){
       var rn=4+idx;
-      var row=ws.getRow(rn);
-      // 计算自适应行高
-      var maxLines=1;
-      vals.forEach(function(v,ci){
-        if(ci===0) return; // 日期列
-        var lines=(String(v).match(/\n/g)||[]).length+1;
-        // 对人员列(索引4-7)也用、估算换行
-        if(ci>=4 && v.indexOf('、')>=0){
-          var est=Math.ceil(String(v).length/15);
-          if(est>lines) lines=est;
-        }
-        if(lines>maxLines) maxLines=lines;
-      });
-      row.height=Math.max(72, maxLines*18);
-
+      var row=ws.getRow(rn); row.height=72;
       vals.forEach(function(v,i){
         var cell=row.getCell(i+1);
         cell.value=v; cell.font=dataFont; cell.border=borderAll;
@@ -1491,13 +1396,6 @@ function exp(){
     window.URL.revokeObjectURL(url);
     msg('导出成功');
   }).catch(function(e){ msg('导出失败'); console.error(e); });
-}
-
-// ===== 导出 PDF（浏览器打印转PDF） =====
-function expPDF(){
-  if(!D.rows.length){ msg('无数据'); return; }
-  msg('正在打开打印对话框，选择"另存为PDF"...');
-  setTimeout(function(){ window.print(); }, 300);
 }
 
 $('d').value = today();
