@@ -5,3 +5,8 @@ __pycache__/
 venv/
 .venv/
 *.xlsx
+*.pdf
+download_font*.py
+build_font*.py
+subset_font*.py
+full_fonts/
