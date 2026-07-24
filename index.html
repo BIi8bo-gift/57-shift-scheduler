@@ -1267,8 +1267,8 @@ function buildStats(){
   var defs={e:'早班',mb:'中午值班',mp:'延迟吃饭',s1:'小夜1:30',s2:'小夜3:30',bn:'大夜',of:'休班'};
   function grp(k){
     var n=(D.colHeaders&&D.colHeaders[k])||defs[k]||k;
-    if(n.indexOf('早')>=0||k==='e') return 'morning';
-    if(n.indexOf('小夜')>=0||k==='mb'||k==='mp'||k==='s1'||k==='s2') return 'evening';
+    if(n.indexOf('早')>=0||k==='e'||k==='mb'||k==='mp') return 'morning';
+    if(n.indexOf('小夜')>=0||k==='s1'||k==='s2') return 'evening';
     if(n.indexOf('大夜')>=0||k==='bn') return 'night';
     if(n.indexOf('休')>=0||k==='of') return 'off';
     return 'morning';
@@ -1346,8 +1346,8 @@ function exp(){
 
   function grp(k){
     var n=(D.colHeaders&&D.colHeaders[k])||defs[k]||k;
-    if(n.indexOf('早')>=0||k==='e') return 'morning';
-    if(n.indexOf('小夜')>=0||k==='mb'||k==='mp'||k==='s1'||k==='s2') return 'evening';
+    if(n.indexOf('早')>=0||k==='e'||k==='mb'||k==='mp') return 'morning';
+    if(n.indexOf('小夜')>=0||k==='s1'||k==='s2') return 'evening';
     if(n.indexOf('大夜')>=0||k==='bn') return 'night';
     if(n.indexOf('休')>=0||k==='of') return 'off';
     return 'morning';
