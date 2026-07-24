@@ -1263,23 +1263,25 @@ function getFilteredRows(){
 function buildStats(){
   var stats={};
   D.people.forEach(function(n){ stats[n]={morning:0,evening:0,night:0,off:0}; });
-  var shiftKeys=['e','mb','mp','s1','s2','bn','of'];
   var defs={e:'早班',mb:'中午值班',mp:'延迟吃饭',s1:'小夜1:30',s2:'小夜3:30',bn:'大夜',of:'休班'};
-  function grp(k){
-    var n=(D.colHeaders&&D.colHeaders[k])||defs[k]||k;
-    if(n.indexOf('早')>=0||k==='e'||k==='mb'||k==='mp') return 'morning';
-    if(n.indexOf('小夜')>=0||k==='s1'||k==='s2') return 'evening';
-    if(n.indexOf('大夜')>=0||k==='bn') return 'night';
-    if(n.indexOf('休')>=0||k==='of') return 'off';
-    return 'morning';
-  }
+  // 按人按天去重：同一个人在同一天同一个班次类别只计一次
+  // mb(中午值班)/mp(延迟吃饭)是早班的附加职责，不单独计班次
   for(var i=0;i<D.rows.length;i++){
     var r=D.rows[i]; if(!r) continue;
-    shiftKeys.forEach(function(k){
-      (r[k]||[]).forEach(function(p){
-        var nm=typeof p==='object'?p.n:p;
-        if(stats[nm]) stats[nm][grp(k)]++;
-      });
+    D.people.forEach(function(nm){
+      var m=(r.e||[]).some(function(p){return (typeof p==='object'?p.n:p)===nm;}) ||
+            (r.mb||[]).some(function(p){return (typeof p==='object'?p.n:p)===nm;}) ||
+            (r.mp||[]).some(function(p){return (typeof p==='object'?p.n:p)===nm;});
+      var e=(r.s1||[]).some(function(p){return (typeof p==='object'?p.n:p)===nm;}) ||
+            (r.s2||[]).some(function(p){return (typeof p==='object'?p.n:p)===nm;});
+      var n=(r.bn||[]).some(function(p){return (typeof p==='object'?p.n:p)===nm;});
+      var f=(r.of||[]).some(function(p){return (typeof p==='object'?p.n:p)===nm;});
+      if(stats[nm]){
+        if(m) stats[nm].morning++;
+        if(e) stats[nm].evening++;
+        if(n) stats[nm].night++;
+        if(f) stats[nm].off++;
+      }
     });
   }
   return stats;
@@ -1354,14 +1356,16 @@ function exp(){
   }
   function buildRow(r){
     var b1=(r.w0||[]).join('\n'), b2=(r.w1||[]).join('\n'), b3=(r.w2||[]).join('\n');
-    var gs={morning:[],evening:[],night:[],off:[]};
+    // 用Set去重：mb/mp与早班在同一组，避免同一人重复出现
+    var gs={morning:new Set(),evening:new Set(),night:new Set(),off:new Set()};
     shiftKeys.forEach(function(k){
       (r[k]||[]).forEach(function(p){
         var nm=(typeof p==='object')?p.n+(p.f?'(强)':''):String(p);
-        if(gs[grp(k)]) gs[grp(k)].push(nm);
+        var g=grp(k);
+        if(g && gs[g]) gs[g].add(nm);
       });
     });
-    return [r.d,b1,b2,b3,gs.morning.join('、'),gs.evening.join('、'),gs.night.join('、'),gs.off.join('、')];
+    return [r.d,b1,b2,b3,[...gs.morning].join('、'),[...gs.evening].join('、'),[...gs.night].join('、'),[...gs.off].join('、')];
   }
 
   var bN=[D.batch[0]||'批号1',D.batch[1]||'批号2',D.batch[2]||'批号3'];
