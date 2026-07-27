@@ -694,7 +694,7 @@ th[style*="color:#fff"]{color:#fff!important}
 <div class="workshop-watermark left">制药</div>
 <div style="max-width:1100px;margin:0 auto;margin-bottom:var(--sp-4)">
 <h1>新时代药业 · 57车间排班表</h1>
-<div class="info">选择日期 → 添加人员 → 点击格子排班 · 右键可复制内容 · 弹窗内可粘贴到后续多天</div>
+<div class="info">选择日期 → 添加人员 → 点击格子排班 · 右键同类型格子直接复制/粘贴 · 弹窗内可批量贴后续</div>
 
 <div class="bar-wrap">
 <div class="bar">
@@ -1000,7 +1000,7 @@ function render(){
     function wCell(k, bg, ci){
       var arr = r[k]||[];
       var txt = arr.length ? arr.map(function(x){return tg(x,bg);}).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl" style="background:'+bg+'" onclick="pkW('+ri+','+ci+')" oncontextmenu="cCW('+ri+','+ci+');return false" title="左键编辑 · 右键复制">'+txt+'</td>';
+      return '<td class="cl" style="background:'+bg+'" onclick="pkW('+ri+','+ci+')" oncontextmenu="return rClickW('+ri+','+ci+')" title="左键编辑 · 右键复制/粘贴">'+txt+'</td>';
     }
     function pCell(k, bg){
       var arr = r[k]||[];
@@ -1008,7 +1008,7 @@ function render(){
         var c = x.f ? 'var(--red)' : bg;
         return tg(x.n, c);
       }).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl" style="background:'+bg+'" onclick="pkP('+ri+',\''+k+'\')" oncontextmenu="cCP('+ri+',\''+k+'\');return false" title="左键编辑 · 右键复制">'+txt+'</td>';
+      return '<td class="cl" style="background:'+bg+'" onclick="pkP('+ri+',\''+k+'\')" oncontextmenu="return rClickP('+ri+',\''+k+'\')" title="左键编辑 · 右键复制/粘贴">'+txt+'</td>';
     }
     
     var animStyle = _firstRender ? 'animation:rowIn 250ms var(--ease-out) both;animation-delay:'+(di*25)+'ms;' : '';
@@ -1547,16 +1547,31 @@ function pasteToRange(){
   msg('✅ 已粘贴到 '+pasted+' 天');
 }
 
-function cCW(ri,ci){
-  var r = D.rows[ri]; if(!r) return;
-  _clip = { type:'work', key:'w'+ci, data: JSON.parse(JSON.stringify(r['w'+ci]||[])) };
-  msg('✅ 已复制工作内容 ('+(_clip.data.length||'空')+')');
+function rClickW(ri,ci){
+  var r = D.rows[ri]; if(!r) return false;
+  var key = 'w'+ci;
+  if(_clip && _clip.key===key){
+    r[key] = JSON.parse(JSON.stringify(_clip.data));
+    save(); render();
+    msg('✅ 已粘贴工作内容');
+  } else {
+    _clip = { type:'work', key:key, data: JSON.parse(JSON.stringify(r[key]||[])) };
+    msg('✅ 已复制工作内容 ('+(_clip.data.length||'空')+')');
+  }
+  return false;
 }
 
-function cCP(ri,key){
-  var r = D.rows[ri]; if(!r) return;
-  _clip = { type:'person', key:key, data: JSON.parse(JSON.stringify(r[key]||[])) };
-  msg('✅ 已复制班次 ('+(_clip.data.length||'空')+')');
+function rClickP(ri,key){
+  var r = D.rows[ri]; if(!r) return false;
+  if(_clip && _clip.key===key){
+    r[key] = JSON.parse(JSON.stringify(_clip.data));
+    save(); render();
+    msg('✅ 已粘贴班次');
+  } else {
+    _clip = { type:'person', key:key, data: JSON.parse(JSON.stringify(r[key]||[])) };
+    msg('✅ 已复制班次 ('+(_clip.data.length||'空')+')');
+  }
+  return false;
 }
 
 function updateFooterBt(){
