@@ -1330,7 +1330,6 @@ function mgr(mode){
 }
 function mdDel(i){
   var lists={people:D.people, work:D.work, batch:D.batch};
-  if(_mgr==='batch'){ msg('批号请在表头点击列名重命名'); return; }
   customConfirm('删除 '+(lists[_mgr][i])+'？',function(){
     lists[_mgr].splice(i,1); save(); mgr(_mgr);
   });
