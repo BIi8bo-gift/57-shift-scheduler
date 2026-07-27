@@ -594,49 +594,74 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
 
 /* Modal chip grid */
 .md .g{
-  display:flex;flex-wrap:wrap;gap:6px;
+  display:flex;flex-wrap:wrap;gap:8px;
   overflow-y:auto;max-height:280px;
   padding:var(--sp-2) 0;
 }
 .md .g>div{
-  padding:7px 16px;border-radius:var(--r-full);
+  padding:8px 18px;border-radius:var(--r-full);
   border:1.5px solid var(--gray-200);
   font-size:.8125rem;font-weight:500;
   cursor:pointer;user-select:none;
-  transition:all 150ms var(--ease-out);
+  transition:all 180ms var(--ease-out);
   color:var(--gray-700);background:var(--surface);
+  box-shadow:var(--shadow-xs);
 }
 .md .g>div:active{transform:scale(.94)}
 @media(hover:hover){
-  .md .g>div:hover{background:var(--gray-50);border-color:var(--gray-300)}
+  .md .g>div:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+    box-shadow:0 2px 8px var(--accent-ring);
+    transform:translateY(-1px);
+  }
 }
 .md .g .s{
   background:var(--accent)!important;border-color:var(--accent)!important;
   color:#fff!important;font-weight:600!important;
-  box-shadow:0 2px 10px rgba(13,123,138,.3)!important;
+  box-shadow:0 3px 12px rgba(13,123,138,.35)!important;
 }
+@media(hover:hover){.md .g .s:hover{box-shadow:0 4px 16px rgba(13,123,138,.45)!important;color:#fff!important;background:var(--accent-hover)!important;}}
 .md .g .d{opacity:.25;cursor:default;pointer-events:none}
 .md .g .fd{
-  opacity:.5;cursor:pointer;
+  opacity:.65;cursor:pointer;
   border-style:dashed!important;border-color:var(--red)!important;
   color:var(--red)!important;background:var(--red-light)!important;
 }
-.md .g .fd:hover{opacity:1;background:rgba(196,69,54,.1)!important}
+.md .g .fd:hover{opacity:1;background:rgba(196,69,54,.12)!important;border-color:var(--red)!important;box-shadow:0 2px 8px rgba(196,69,54,.25)!important;}
+
+/* Modal description bar */
+.md .mh{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:var(--sp-3);
+}
+.md .mh .mh-icon{
+  width:32px;height:32px;flex-shrink:0;
+  border-radius:var(--r-md);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;
+  background:var(--accent-light);
+  color:var(--accent);
+}
 
 /* Modal input row */
 .md .ab{
   display:flex;gap:var(--sp-2);margin-top:var(--sp-3);
 }
 .md .ab input{
-  flex:1;height:38px;padding:0 14px;
+  flex:1;height:40px;padding:0 14px;
   border:1.5px solid var(--gray-200);border-radius:var(--r-md);
   font-size:.8125rem;font-family:var(--font);
-  background:var(--gray-50);color:var(--text);
+  background:var(--surface);color:var(--text);
   transition:all 180ms var(--ease-out);outline:none;
 }
 .md .ab input:focus{
   border-color:var(--accent);
   box-shadow:0 0 0 3px var(--accent-ring);
+  background:var(--surface);
+}
+.md .ab input:hover{
+  border-color:var(--gray-300);
 }
 
 /* Modal footer */
@@ -736,7 +761,7 @@ th[style*="color:#fff"]{color:#fff!important}
 <div class="workshop-watermark left">制药</div>
 <div style="max-width:1100px;margin:0 auto;margin-bottom:var(--sp-4)">
 <h1>新时代药业 · 57车间排班表</h1>
-<div class="info">选择日期 → 添加人员 → 点击格子排班 · 右键同类型格子直接复制/粘贴 · 弹窗内可批量贴后续</div>
+<div class="info">选择日期 → 添加人员 → 点击格子排班 · 右键删除行 · 弹窗内可复制粘贴</div>
 
 <div class="bar-wrap">
 <div class="bar">
@@ -1042,7 +1067,7 @@ function render(){
     function wCell(k, bg, ci){
       var arr = r[k]||[];
       var txt = arr.length ? arr.map(function(x){return tg(x,bg);}).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl" style="background:'+bg+'" onclick="pkW('+ri+','+ci+')" oncontextmenu="return rClickW('+ri+','+ci+')" title="左键编辑 · 右键复制/粘贴">'+txt+'</td>';
+      return '<td class="cl" style="background:'+bg+'" onclick="pkW('+ri+','+ci+')" title="左键编辑">'+txt+'</td>';
     }
     function pCell(k, bg){
       var arr = r[k]||[];
@@ -1050,7 +1075,7 @@ function render(){
         var c = x.f ? 'var(--red)' : bg;
         return tg(x.n, c);
       }).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl" style="background:'+bg+'" onclick="pkP('+ri+',\''+k+'\')" oncontextmenu="return rClickP('+ri+',\''+k+'\')" title="左键编辑 · 右键复制/粘贴">'+txt+'</td>';
+      return '<td class="cl" style="background:'+bg+'" onclick="pkP('+ri+',\''+k+'\')" title="左键编辑">'+txt+'</td>';
     }
     
     var animStyle = _firstRender ? 'animation:rowIn 250ms var(--ease-out) both;animation-delay:'+(di*25)+'ms;' : '';
@@ -1120,8 +1145,8 @@ function pkW(ri, ci){
   var r = D.rows[ri];
   var cur = r['w'+ci]||[];
   var title = (D.batch[ci]||'批号'+(ci+1))+' — 工作内容';
-  $('mxt').textContent = r.d+' — '+title;
-  $('mxh').textContent = '点击选择该批号今日工作';
+  $('mxt').innerHTML = '<span class="mh-icon">🥼</span>'+r.d+' — '+title;
+  $('mxh').textContent = '点击选择该批号今日工作·蓝色为已选';
   gridW(cur);
   $('mxn').placeholder = '新工作内容';
   $('mx').className = 'm s';
@@ -1150,8 +1175,9 @@ function pkP(ri, key){
   var keys=['e','mb','mp','s1','s2','bn','of'];
   var defs={e:'早班',mb:'中午值班',mp:'延迟吃饭',s1:'小夜1:30',s2:'小夜3:30',bn:'大夜',of:'休班'};
   for(var k=0;k<keys.length;k++) ns[keys[k]] = (D.colHeaders&&D.colHeaders[keys[k]]) || defs[keys[k]];
-  $('mxt').textContent = r.d+' — '+ns[key];
-  $('mxh').textContent = '点击选人·灰色=已排别班可双击强制(红色)';
+  var icons={e:'☀️',mb:'🍱',mp:'⏰',s1:'🌆',s2:'🌃',bn:'🌙',of:'😴'};
+  $('mxt').innerHTML = '<span class="mh-icon">'+(icons[key]||'👤')+'</span>'+r.d+' — '+ns[key];
+  $('mxh').textContent = '点击选人·灰色+虚线=已排别班·双击强制(红色)';
   gridP(cur, key, ri);
   $('mxn').placeholder = '新姓名';
   $('mx').className = 'm s';
@@ -1239,9 +1265,10 @@ function mdClose(){
 function mgr(mode){
   _mgr = mode; _ctx = {mode:mode, mode2:true};
   var titles={people:'人员管理',work:'工作内容管理',batch:'批号管理'};
+  var icons={people:'👥',work:'🥼',batch:'🏷️'};
   var hints={people:'点击右侧 ✕ 删除人员',work:'点击右侧 ✕ 删除工作内容',batch:'批号请在表头点击列名重命名'};
   var lists={people:D.people, work:D.work, batch:D.batch};
-  $('mxt').textContent = titles[mode];
+  $('mxt').innerHTML = '<span class="mh-icon">'+(icons[mode]||'⚙️')+'</span>'+titles[mode];
   $('mxh').textContent = hints[mode];
   $('mxg').style.display = 'block';
   $('mxg').style.maxHeight = '320px';
@@ -1367,7 +1394,7 @@ function showStats(){
     h+='<td style="padding:4px 8px;border-bottom:1px solid var(--gray-100);text-align:center;font-weight:600">'+total+'</td></tr>';
   });
   h+='</table>';
-  $('mxt').textContent='出勤统计';
+  $('mxt').innerHTML='<span class="mh-icon">📊</span>出勤统计';
   $('mxh').textContent='点击人名可筛选查看该人排班';
   $('mxg').innerHTML=h;
   $('mxg').style.maxHeight='60vh';
