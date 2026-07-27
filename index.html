@@ -675,46 +675,6 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
 .md .g table th{font-size:.6875rem;padding:6px 8px;background:var(--gray-50)}
 
 /* ===== 管理弹窗列表 ===== */
-.mgr-item{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:11px 14px;
-  border-radius:var(--r-md);
-  border:1.5px solid var(--gray-100);
-  background:var(--surface);
-  margin-bottom:6px;
-  transition:all 150ms var(--ease-out);
-  cursor:default;
-  animation:scaleIn 180ms var(--ease-out);
-}
-.mgr-item:hover{
-  border-color:var(--gray-200);
-  background:var(--surface-hover);
-  box-shadow:var(--shadow-xs);
-}
-.mgr-name{
-  font-size:.8125rem;font-weight:500;
-  color:var(--gray-700);
-  flex:1;
-  line-height:1.5;
-}
-.mgr-del{
-  width:28px;height:28px;flex-shrink:0;
-  border:none;border-radius:var(--r-sm);
-  background:transparent;
-  color:var(--gray-400);
-  font-size:13px;font-weight:600;
-  cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:all 120ms var(--ease-out);
-  opacity:0.35;
-  margin-left:8px;
-}
-.mgr-item:hover .mgr-del{opacity:1;}
-.mgr-del:hover{
-  background:var(--red-light);
-  color:var(--red);
-  opacity:1;
-}
 .md .g table td{font-size:.8125rem;padding:6px 8px}
 
 /* ===== BOTTOM BAR ===== */
@@ -1303,16 +1263,14 @@ function mdCancel(){ mdClose(); }
 function mgr(mode){
   _mgr = mode; _ctx = {mode:mode, mode2:true};
   var titles={people:'人员管理',work:'工作内容管理',batch:'批号管理'};
-  var icons={people:'👥',work:'🥼',batch:'🏷️'};
-  var hints={people:'点击右侧 ✕ 删除人员',work:'点击右侧 ✕ 删除工作内容',batch:'批号请在表头点击列名重命名'};
   var lists={people:D.people, work:D.work, batch:D.batch};
-  $('mxt').innerHTML = '<span class="mh-icon">'+(icons[mode]||'⚙️')+'</span>'+titles[mode];
-  $('mxh').textContent = hints[mode];
-  $('mxg').style.display = 'block';
-  $('mxg').style.maxHeight = '320px';
-  $('mxg').innerHTML = '<div style="padding:1px 0">' + lists[mode].map(function(n,i){
-    return '<div class="mgr-item"><span class="mgr-name">'+esc(n)+'</span><span class="mgr-del" onclick="mdDel('+i+')" title="删除">✕</span></div>';
-  }).join('') + '</div>';
+  $('mxt').innerHTML = '<span class="mh-icon">'+(icons[mode]||'')+'</span>'+titles[mode];
+  $('mxh').textContent = '';
+  $('mxg').style.display = '';
+  $('mxg').style.maxHeight = '';
+  $('mxg').innerHTML = lists[mode].map(function(n,i){
+    return '<div class="s" onclick="mdDel('+i+')">'+esc(n)+' &#x00D7;</div>';
+  }).join('');
   $('mxn').placeholder = {people:'新姓名', work:'新工作内容', batch:'新批号'}[mode];
   $('mx').className = 'm s';
   updateFooterBt();
