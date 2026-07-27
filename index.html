@@ -1117,7 +1117,7 @@ function customConfirm(msg, fn){
   $('mxn').style.display = 'none';
   var ab=$('mx').querySelector('.ab'); if(ab)ab.style.display='none';
   var bt=$('mx').querySelector('.bt');
-  bt.innerHTML = '<button class="btn btn-o" onclick="mdClose()">取消</button><button class="btn btn-p" onclick="_cb();mdClose()">确定</button>';
+  bt.innerHTML = '<button class="btn btn-o" onclick="mdClose()">取消</button><button class="btn btn-p" onclick="confirmOk()">确定</button>';
   $('mx').className = 'm s';
 }
 
@@ -1130,15 +1130,31 @@ function customPrompt(msg, defVal, fn){
   $('mxn').value = defVal||'';
   var ab=$('mx').querySelector('.ab'); if(ab)ab.style.display='';
   var bt=$('mx').querySelector('.bt');
-  bt.innerHTML = '<button class="btn btn-o" onclick="mdClose()">取消</button><button class="btn btn-p" onclick="_cb($(\'mxn\').value);mdClose()">确定</button>';
+  bt.innerHTML = '<button class="btn btn-o" onclick="mdClose()">取消</button><button class="btn btn-p" onclick="promptOk()">确定</button>';
   $('mx').className = 'm s';
   $('mxn').focus();
   $('mxn').select();
 }
 
+function confirmOk(){
+  var fn = _cb;
+  var sm = _mgr, sc = _ctx;
+  mdClose();
+  if(fn){ _mgr=sm; _ctx=sc; setTimeout(fn,0); }
+}
+
+function promptOk(){
+  var fn = _cb;
+  var v = $('mxn').value;
+  var sm = _mgr, sc = _ctx;
+  mdClose();
+  if(fn){ _mgr=sm; _ctx=sc; setTimeout(function(){ fn(v); },0); }
+}
+
 function mdClose(){
   $('mx').className='m'; _ctx=null; _mgr=null; _cb=null; _cbMode=null;
   $('mxn').style.display='';
+  $('mxn').value='';
   var ab=$('mx').querySelector('.ab'); if(ab)ab.style.display='';
   $('mxg').style.display='';
   $('mxg').style.maxHeight='260px';
