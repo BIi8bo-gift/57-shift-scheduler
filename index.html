@@ -958,20 +958,23 @@ function drawH(){
   }
 }
 function renB(i){
-  var o=D.batch[i]||'批号'+(i+1);var n=prompt('重命名批号：',o);
-  if(!n||n===o)return;
-  D.batch[i]=n;save();drawH();msg('已重命名');
+  var o=D.batch[i]||'批号'+(i+1);
+  customPrompt('输入新批号名称：',o,function(n){
+    if(!n||n===o)return;
+    D.batch[i]=n;save();drawH();msg('已重命名');
+  });
 }
 function renH(key){
   var names={e:'早班',mb:'中午值班',mp:'延迟吃饭',s1:'小夜1:30',s2:'小夜3:30',bn:'大夜',of:'休班'};
   var el=$('hdr_'+key);
   var cur=el.textContent;
-  var n=prompt('重命名班次：',cur);
-  if(!n||n===cur)return;
-  if(!D.colHeaders) D.colHeaders={};
-  D.colHeaders[key]=n;
-  el.textContent=n;
-  save();msg('已重命名');
+  customPrompt('输入新班次名称：',cur,function(n){
+    if(!n||n===cur)return;
+    if(!D.colHeaders) D.colHeaders={};
+    D.colHeaders[key]=n;
+    el.textContent=n;
+    save();msg('已重命名');
+  });
 }
 
 // ===== 选择模式 + 多选删除 =====
@@ -1033,11 +1036,12 @@ function delSel(){
   var idxs = [];
   for(var k in _sel) if(_sel[k]) idxs.push(parseInt(k));
   if(!idxs.length){ msg('未选择'); return; }
-  if(!confirm('删除 '+idxs.length+' 行？')) return;
-  idxs.sort(function(a,b){return b-a});
-  for(var i=0;i<idxs.length;i++) D.rows.splice(idxs[i],1);
-  _sel = {};
-  save(); render(); msg('已删除 '+idxs.length+' 行');
+  customConfirm('删除 '+idxs.length+' 行？',function(){
+    idxs.sort(function(a,b){return b-a});
+    for(var i=0;i<idxs.length;i++) D.rows.splice(idxs[i],1);
+    _sel = {};
+    save(); render(); msg('已删除 '+idxs.length+' 行');
+  });
 }
 
 // ===== 渲染 =====
@@ -1138,6 +1142,49 @@ function addRow(){
 }
 
 
+
+// ===== 自定义确认/输入弹窗（替代浏览器原生prompt/confirm） =====
+var _cb = null;
+var _cbMode = null; // 'confirm' or 'prompt'
+
+function customConfirm(msg, fn){
+  _cb = fn; _cbMode = 'confirm';
+  $('mxt').innerHTML = '<span class="mh-icon">❓</span>确认';
+  $('mxh').textContent = '';
+  $('mxg').style.display = 'block';
+  $('mxg').style.maxHeight = 'auto';
+  $('mxg').innerHTML = '<div style="padding:16px 4px;text-align:center;font-size:1rem;color:var(--gray-700);line-height:1.6">'+esc(msg)+'</div>';
+  $('mxn').style.display = 'none';
+  var ab=$('mx').querySelector('.ab'); if(ab)ab.style.display='none';
+  var bt=$('mx').querySelector('.bt');
+  bt.innerHTML = '<button class="btn btn-o" onclick="mdClose()">取消</button><button class="btn btn-p" onclick="_cb();mdClose()">确定</button>';
+  $('mx').className = 'm s';
+}
+
+function customPrompt(msg, defVal, fn){
+  _cb = fn; _cbMode = 'prompt';
+  $('mxt').innerHTML = '<span class="mh-icon">✏️</span>输入';
+  $('mxh').textContent = msg;
+  $('mxg').style.display = 'none';
+  $('mxn').style.display = '';
+  $('mxn').value = defVal||'';
+  var ab=$('mx').querySelector('.ab'); if(ab)ab.style.display='';
+  var bt=$('mx').querySelector('.bt');
+  bt.innerHTML = '<button class="btn btn-o" onclick="mdClose()">取消</button><button class="btn btn-p" onclick="_cb($(\'mxn\').value);mdClose()">确定</button>';
+  $('mx').className = 'm s';
+  $('mxn').focus();
+  $('mxn').select();
+}
+
+function mdClose(){
+  $('mx').className='m'; _ctx=null; _mgr=null; _cb=null; _cbMode=null;
+  $('mxn').style.display='';
+  var ab=$('mx').querySelector('.ab'); if(ab)ab.style.display='';
+  $('mxg').style.display='';
+  $('mxg').style.maxHeight='260px';
+  var bt=$('mx').querySelector('.bt');
+  if(bt) bt.innerHTML='<button class="btn btn-o" onclick="mdCancel()">取消</button><button class="btn btn-p" onclick="mdOk()">确定</button>';
+}
 
 // ===== 工作内容选择弹窗 =====
 function pkW(ri, ci){
@@ -1251,15 +1298,6 @@ function mdAdd(){
 }
 function mdOk(){ save(); mdClose(); render(); }
 function mdCancel(){ mdClose(); }
-function mdClose(){
-  $('mx').className='m'; _ctx=null; _mgr=null;
-  $('mxn').style.display='';
-  var ab=$('mx').querySelector('.ab'); if(ab)ab.style.display='';
-  $('mxg').style.display='';
-  $('mxg').style.maxHeight='260px';
-  var bt=$('mx').querySelector('.bt');
-  if(bt) bt.innerHTML='<button class="btn btn-o" onclick="mdCancel()">取消</button><button class="btn btn-p" onclick="mdOk()">确定</button>';
-}
 
 // ===== 管理弹窗（人员/工作/批号） =====
 function mgr(mode){
@@ -1282,8 +1320,9 @@ function mgr(mode){
 function mdDel(i){
   var lists={people:D.people, work:D.work, batch:D.batch};
   if(_mgr==='batch'){ msg('批号请在表头点击列名重命名'); return; }
-  if(!confirm('删除 '+(lists[_mgr][i])+'？')) return;
-  lists[_mgr].splice(i,1); save(); mgr(_mgr);
+  customConfirm('删除 '+(lists[_mgr][i])+'？',function(){
+    lists[_mgr].splice(i,1); save(); mgr(_mgr);
+  });
 }
 
 // ===== 导出（8列正确格式） =====
@@ -1401,16 +1440,18 @@ function showStats(){
   $('mxn').style.display='none';
   $('mx').querySelector('.ab').style.display='none';
   var bt=$('mx').querySelector('.bt');
+  var bt=$('mx').querySelector('.bt');
   bt.innerHTML='<button class="btn btn-o" onclick="clearFilter();mdClose()">清除筛选</button><button class="btn btn-p" onclick="mdClose()">关闭</button>';
   $('mx').className='m s';
 }
 
 // ===== 快速删除 =====
 function delRow(ri){
-  if(!confirm('删除 '+D.rows[ri].d+' 这条？')) return;
-  D.rows.splice(ri,1);
-  _sel={};
-  save();render();msg('已删除');
+  customConfirm('删除 '+D.rows[ri].d+' 这条？',function(){
+    D.rows.splice(ri,1);
+    _sel={};
+    save();render();msg('已删除');
+  });
 }
 function clearMonth(){
   var sel=$('monthSel'); if(!sel) return;
@@ -1418,12 +1459,13 @@ function clearMonth(){
   if(!m){ msg('先选月份'); return; }
   var cnt=D.rows.filter(function(r){return r.d && r.d.indexOf(m)===0;}).length;
   if(!cnt){ msg('本月无数据'); return; }
-  if(!confirm('清空 '+m.replace('/','年')+'月 全部 '+cnt+' 条排班？不可恢复！')) return;
-  for(var i=D.rows.length-1;i>=0;i--){
-    if(D.rows[i] && D.rows[i].d && D.rows[i].d.indexOf(m)===0) D.rows.splice(i,1);
-  }
-  _sel={};
-  save();render();msg('已清空');
+  customConfirm('清空 '+m.replace('/','年')+'月 全部 '+cnt+' 条排班？不可恢复！',function(){
+    for(var i=D.rows.length-1;i>=0;i--){
+      if(D.rows[i] && D.rows[i].d && D.rows[i].d.indexOf(m)===0) D.rows.splice(i,1);
+    }
+    _sel={};
+    save();render();msg('已清空');
+  });
 }
 
 // ===== 导出（ExcelJS纯前端） =====
@@ -1616,19 +1658,20 @@ function pasteCell(){
 function pasteToRange(){
   if(!_clip||!_ctx){ msg('无内容可粘贴'); return; }
   if(_clip.key!==_ctx.key){ msg('类型不符，请复制同类型单元格'); return; }
-  var days = prompt('粘贴到后续几天（含今天）？','3');
-  if(!days) return;
-  var n = parseInt(days);
-  if(isNaN(n)||n<1){ msg('无效数字'); return; }
-  var curIdx = -1;
-  for(var i=0;i<D.rows.length;i++){ if(D.rows[i]&&D.rows[i].d===D.rows[_ctx.ri].d){ curIdx=i; break; } }
-  if(curIdx<0) return;
-  var pasted = 0;
-  for(var i=curIdx;i<curIdx+n&&i<D.rows.length;i++){
-    if(D.rows[i]){ D.rows[i][_clip.key]=JSON.parse(JSON.stringify(_clip.data)); pasted++; }
-  }
-  save(); render(); mdClose();
-  msg('✅ 已粘贴到 '+pasted+' 天');
+  customPrompt('粘贴到后续几天（含今天）？','3',function(days){
+    if(!days) return;
+    var n = parseInt(days);
+    if(isNaN(n)||n<1){ msg('无效数字'); return; }
+    var curIdx = -1;
+    for(var i=0;i<D.rows.length;i++){ if(D.rows[i]&&D.rows[i].d===D.rows[_ctx.ri].d){ curIdx=i; break; } }
+    if(curIdx<0) return;
+    var pasted = 0;
+    for(var i=curIdx;i<curIdx+n&&i<D.rows.length;i++){
+      if(D.rows[i]){ D.rows[i][_clip.key]=JSON.parse(JSON.stringify(_clip.data)); pasted++; }
+    }
+    save(); render(); mdClose();
+    msg('✅ 已粘贴到 '+pasted+' 天');
+  });
 }
 
 function rClickW(ri,ci){
