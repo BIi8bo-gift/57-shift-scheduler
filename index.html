@@ -1157,17 +1157,28 @@ function pkPForce(n){
 function mdAdd(){
   var n = $('mxn').value.trim(); if(!n){ msg('输入'); return; }
   if(!_ctx){ msg('错误'); return; }
-  if(_ctx.mode==='work'){
+  // 判断添加到哪个列表（按添加顺序，不排序）
+  if(_ctx.mode==='work'||_mgr==='work'){
     if(D.work.indexOf(n)>=0){ msg('已有'); return; }
-    D.work.push(n); D.work.sort();
+    D.work.push(n);
+  } else if(_mgr==='batch'){
+    if(D.batch.indexOf(n)>=0){ msg('已有'); return; }
+    D.batch.push(n);
   } else {
     if(D.people.indexOf(n)>=0){ msg('已有'); return; }
     D.people.push(n);
   }
   save(); $('mxn').value = '';
-  var r = D.rows[_ctx.ri];
-  if(_ctx.mode==='work') gridW(r[_ctx.key]||[]);
-  else gridP(r[_ctx.key]||[], _ctx.key, _ctx.ri);
+  // 刷新显示
+  if(_ctx.mode2){
+    mgr(_mgr);
+  } else {
+    var r = D.rows[_ctx.ri];
+    if(r){
+      if(_ctx.mode==='work') gridW(r[_ctx.key]||[]);
+      else gridP(r[_ctx.key]||[], _ctx.key, _ctx.ri);
+    }
+  }
   msg('已添加');
 }
 function mdOk(){ save(); mdClose(); render(); }
