@@ -1264,7 +1264,7 @@ function mgr(mode){
   _mgr = mode; _ctx = {mode:mode, mode2:true};
   var titles={people:'人员管理',work:'工作内容管理',batch:'批号管理'};
   var lists={people:D.people, work:D.work, batch:D.batch};
-  $('mxt').innerHTML = '<span class="mh-icon">'+(icons[mode]||'')+'</span>'+titles[mode];
+  $('mxt').textContent = titles[mode];
   $('mxh').textContent = '';
   $('mxg').style.display = '';
   $('mxg').style.maxHeight = '';
