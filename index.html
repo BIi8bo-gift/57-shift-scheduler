@@ -606,6 +606,7 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
   transition:all 180ms var(--ease-out);
   color:var(--gray-700);background:var(--surface);
   box-shadow:var(--shadow-xs);
+  position:relative;
 }
 .md .g>div:active{transform:scale(.94)}
 @media(hover:hover){
@@ -629,6 +630,22 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
   color:var(--red)!important;background:var(--red-light)!important;
 }
 .md .g .fd:hover{opacity:1;background:rgba(196,69,54,.12)!important;border-color:var(--red)!important;box-shadow:0 2px 8px rgba(196,69,54,.25)!important;}
+
+/* 芯片右上角 ✕ 删除 */
+.chip-x{
+  display:inline-block;margin-left:4px;
+  font-size:11px;font-weight:700;
+  color:inherit;opacity:0.35;
+  cursor:pointer;transition:opacity 120ms;
+  padding:0 1px;
+  vertical-align:middle;
+  line-height:1;
+}
+.chip-x:hover{opacity:1!important;}
+.md .g .s .chip-x{color:#fff;opacity:0.7;}
+.md .g .s .chip-x:hover{opacity:1;}
+.md .g .fd .chip-x{color:var(--red);opacity:0.5;}
+.md .g .fd .chip-x:hover{opacity:1;}
 
 /* Modal description bar */
 .md .mh{
@@ -1178,7 +1195,7 @@ function pkW(ri, ci){
 function gridW(cur){
   $('mxg').innerHTML = D.work.map(function(n){
     var s = cur.indexOf(n)>=0 ? ' s' : '';
-    return '<div class="'+s+'" onclick="gdW(\''+esc(n)+'\')">'+esc(n)+'</div>';
+    return '<div class="'+s+'" onclick="gdW(\''+esc(n)+'\')">'+esc(n)+'<span class="chip-x" onclick="event.cancelBubble=true;mdDelWork(\''+esc(n)+'\')">✕</span></div>';
   }).join('');
 }
 function gdW(n){
@@ -1187,6 +1204,16 @@ function gdW(n){
   var i = cur.indexOf(n);
   if(i>=0) cur.splice(i,1); else cur.push(n);
   gridW(cur);
+}
+function mdDelWork(n){
+  var i = D.work.indexOf(n); if(i<0) return;
+  customConfirm('删除工作内容 "'+n+'"？',function(){
+    D.work.splice(i,1); save();
+    if(_ctx&&_ctx.ri!=null){
+      var r=D.rows[_ctx.ri];
+      if(r) gridW(r[_ctx.key]||[]);
+    }
+  });
 }
 
 // ===== 人员选择弹窗 =====
@@ -1225,7 +1252,7 @@ function gridP(cur, key, ri){
     if(inCur) cls = ' s';
     else if(inOther) cls = ' fd';
     var onclick = inOther ? "pkPForce('"+esc(n)+"')" : "pkPClick('"+esc(n)+"')";
-    h += '<div class="'+cls+'" onclick="'+onclick+'">'+esc(n)+'</div>';
+    h += '<div class="'+cls+'" onclick="'+onclick+'">'+esc(n)+'<span class="chip-x" onclick="event.cancelBubble=true;mdDelPerson(\''+esc(n)+'\')">✕</span></div>';
   }
   $('mxg').innerHTML = h;
 }
@@ -1242,6 +1269,16 @@ function pkPForce(n){
   var idx = cur.findIndex(function(x){ return x.n===n; });
   if(idx>=0){ cur.splice(idx,1); }else{ cur.push({n:n,f:1}); msg('强制排班 '+n); }
   gridP(cur, _ctx.key, _ctx.ri);
+}
+function mdDelPerson(n){
+  var i = D.people.indexOf(n); if(i<0) return;
+  customConfirm('删除人员 "'+n+'"？',function(){
+    D.people.splice(i,1); save();
+    if(_ctx&&_ctx.ri!=null){
+      var r=D.rows[_ctx.ri];
+      if(r) gridP(r[_ctx.key]||[], _ctx.key, _ctx.ri);
+    }
+  });
 }
 
 // ===== 弹窗通用 =====
