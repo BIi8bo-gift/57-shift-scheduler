@@ -694,7 +694,7 @@ th[style*="color:#fff"]{color:#fff!important}
 <div class="workshop-watermark left">制药</div>
 <div style="max-width:1100px;margin:0 auto;margin-bottom:var(--sp-4)">
 <h1>新时代药业 · 57车间排班表</h1>
-<div class="info">选择日期 → 添加人员 → 点击格子排班 · 双击强制 · 灰色为已排他班</div>
+<div class="info">选择日期 → 添加人员 → 点击格子排班 · 右键可复制内容 · 弹窗内可粘贴到后续多天</div>
 
 <div class="bar-wrap">
 <div class="bar">
@@ -1000,7 +1000,7 @@ function render(){
     function wCell(k, bg, ci){
       var arr = r[k]||[];
       var txt = arr.length ? arr.map(function(x){return tg(x,bg);}).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl" style="background:'+bg+'" onclick="pkW('+ri+','+ci+')">'+txt+'</td>';
+      return '<td class="cl" style="background:'+bg+'" onclick="pkW('+ri+','+ci+')" oncontextmenu="cCW('+ri+','+ci+');return false" title="左键编辑 · 右键复制">'+txt+'</td>';
     }
     function pCell(k, bg){
       var arr = r[k]||[];
@@ -1008,7 +1008,7 @@ function render(){
         var c = x.f ? 'var(--red)' : bg;
         return tg(x.n, c);
       }).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl" style="background:'+bg+'" onclick="pkP('+ri+',\''+k+'\')">'+txt+'</td>';
+      return '<td class="cl" style="background:'+bg+'" onclick="pkP('+ri+',\''+k+'\')" oncontextmenu="cCP('+ri+',\''+k+'\');return false" title="左键编辑 · 右键复制">'+txt+'</td>';
     }
     
     var animStyle = _firstRender ? 'animation:rowIn 250ms var(--ease-out) both;animation-delay:'+(di*25)+'ms;' : '';
@@ -1083,6 +1083,7 @@ function pkW(ri, ci){
   gridW(cur);
   $('mxn').placeholder = '新工作内容';
   $('mx').className = 'm s';
+  updateFooterBt();
 }
 function gridW(cur){
   $('mxg').innerHTML = D.work.map(function(n){
@@ -1112,6 +1113,7 @@ function pkP(ri, key){
   gridP(cur, key, ri);
   $('mxn').placeholder = '新姓名';
   $('mx').className = 'm s';
+  updateFooterBt();
 }
 function gridP(cur, key, ri){
   var r = D.rows[ri]; if(!r) return;
@@ -1191,6 +1193,7 @@ function mgr(mode){
   }).join('');
   $('mxn').placeholder = {people:'新姓名', work:'新工作内容', batch:'新批号'}[mode];
   $('mx').className = 'm s';
+  updateFooterBt();
 }
 function mdDel(i){
   var lists={people:D.people, work:D.work, batch:D.batch};
@@ -1502,6 +1505,82 @@ function expPDF(){
   if(!D.rows.length){ msg('无数据'); return; }
   msg('正在打开打印对话框，选择"另存为PDF"...');
   setTimeout(function(){ window.print(); }, 300);
+}
+
+// ===== 复制/粘贴功能 =====
+var _clip = null;
+
+function copyCell(){
+  if(!_ctx) return;
+  var r = D.rows[_ctx.ri]; if(!r) return;
+  _clip = { type: _ctx.mode, key: _ctx.key, data: JSON.parse(JSON.stringify(r[_ctx.key]||[])) };
+  msg('✅ 已复制'+(_clip.data.length||'空'));
+  updateFooterBt();
+}
+
+function pasteCell(){
+  if(!_clip||!_ctx){ msg('无内容可粘贴'); return; }
+  if(_clip.key!==_ctx.key){ msg('类型不符，请复制同类型单元格'); return; }
+  var r = D.rows[_ctx.ri]; if(!r) return;
+  r[_ctx.key] = JSON.parse(JSON.stringify(_clip.data));
+  save();
+  if(_ctx.mode==='work') gridW(r[_ctx.key]||[]);
+  else gridP(r[_ctx.key]||[], _ctx.key, _ctx.ri);
+  msg('✅ 已粘贴');
+}
+
+function pasteToRange(){
+  if(!_clip||!_ctx){ msg('无内容可粘贴'); return; }
+  if(_clip.key!==_ctx.key){ msg('类型不符，请复制同类型单元格'); return; }
+  var days = prompt('粘贴到后续几天（含今天）？','3');
+  if(!days) return;
+  var n = parseInt(days);
+  if(isNaN(n)||n<1){ msg('无效数字'); return; }
+  var curIdx = -1;
+  for(var i=0;i<D.rows.length;i++){ if(D.rows[i]&&D.rows[i].d===D.rows[_ctx.ri].d){ curIdx=i; break; } }
+  if(curIdx<0) return;
+  var pasted = 0;
+  for(var i=curIdx;i<curIdx+n&&i<D.rows.length;i++){
+    if(D.rows[i]){ D.rows[i][_clip.key]=JSON.parse(JSON.stringify(_clip.data)); pasted++; }
+  }
+  save(); render(); mdClose();
+  msg('✅ 已粘贴到 '+pasted+' 天');
+}
+
+function cCW(ri,ci){
+  var r = D.rows[ri]; if(!r) return;
+  _clip = { type:'work', key:'w'+ci, data: JSON.parse(JSON.stringify(r['w'+ci]||[])) };
+  msg('✅ 已复制工作内容 ('+(_clip.data.length||'空')+')');
+}
+
+function cCP(ri,key){
+  var r = D.rows[ri]; if(!r) return;
+  _clip = { type:'person', key:key, data: JSON.parse(JSON.stringify(r[key]||[])) };
+  msg('✅ 已复制班次 ('+(_clip.data.length||'空')+')');
+}
+
+function updateFooterBt(){
+  var bt = $('mx').querySelector('.bt');
+  if(!bt) return;
+  if(!_ctx||_ctx.mode2){
+    bt.innerHTML='<button class="btn btn-o" onclick="mdCancel()">取消</button><button class="btn btn-p" onclick="mdOk()">确定</button>';
+    return;
+  }
+  var canPaste = _clip && _clip.key === _ctx.key;
+  var h = '';
+  h += '<button class="btn btn-o btn-sm" onclick="copyCell()" title="复制当前安排">📋 复制</button>';
+  if(canPaste){
+    h += '<button class="btn btn-o btn-sm" onclick="pasteCell()" title="粘贴到当天">📝 粘贴</button>';
+    h += '<button class="btn btn-o btn-sm" onclick="pasteToRange()" title="粘贴到连续多天">📝 粘后续</button>';
+  }
+  if(_clip){
+    var clipInfo = _clip.data.length + '项';
+    h += '<span style="font-size:11px;color:var(--text-muted);margin:0 4px">📋已复制('+clipInfo+')</span>';
+  }
+  h += '<span style="flex:1"></span>';
+  h += '<button class="btn btn-o" onclick="mdCancel()">取消</button>';
+  h += '<button class="btn btn-p" onclick="mdOk()">确定</button>';
+  bt.innerHTML = h;
 }
 
 $('d').value = today();
