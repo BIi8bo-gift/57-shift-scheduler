@@ -729,6 +729,49 @@ body > div:last-of-type.bar .btn-g{
 
 /* White text on dark header cells stays white */
 th[style*="color:#fff"]{color:#fff!important}
+
+
+/* ===== AI 自动排班 ===== */
+.btn-ai{
+  background:linear-gradient(135deg,#0d7b8a 0%,#5b4fc9 100%);
+  color:#fff;
+  box-shadow:0 2px 0 rgba(0,0,0,.12),0 1px 3px rgba(0,0,0,.08);
+}
+.btn-ai:hover{
+  filter:brightness(1.08);
+  box-shadow:0 4px 14px rgba(91,79,201,.35);
+  transform:translateY(-1px);
+}
+.btn-ai:active{transform:scale(.95) translateY(0)}
+#aiBox{width:100%;display:block;padding:0;margin:0;background:transparent;border:none;border-radius:0;box-shadow:none;cursor:default;transform:none;font-size:.8125rem;color:var(--text)}
+.ai-tip{font-size:.75rem;color:var(--text-muted);line-height:1.6;margin-bottom:var(--sp-3);background:var(--gray-50);border:1px solid var(--gray-100);border-radius:var(--r-md);padding:8px 10px}
+.ai-tip b{color:var(--accent)}
+.ai-row{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.ai-row .inp{height:34px;font-size:.8125rem}
+.ai-row .btn-x{height:34px;width:34px;padding:0;border-radius:var(--r-md);background:var(--gray-50);border:1.5px solid var(--gray-200);color:var(--gray-500);cursor:pointer;font-size:14px;flex-shrink:0;transition:all 160ms var(--ease-out)}
+.ai-row .btn-x:hover{color:var(--red);border-color:var(--red);background:var(--red-light)}
+.ai-add{margin:2px 0 var(--sp-3)}
+.ai-opts{display:flex;gap:var(--sp-3);flex-wrap:wrap;align-items:center;padding:var(--sp-2) 0;border-top:1px dashed var(--gray-200);border-bottom:1px dashed var(--gray-200);margin-bottom:var(--sp-2)}
+.ai-opts label{display:flex;align-items:center;gap:4px;font-size:.75rem;color:var(--gray-600);white-space:nowrap}
+.ai-opts input[type=number]{width:44px;height:30px;text-align:center;border:1.5px solid var(--gray-200);border-radius:var(--r-sm);font-size:.8125rem;font-family:var(--font);background:var(--gray-50);color:var(--text);outline:none}
+.ai-opts input[type=number]:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-ring)}
+.ai-fem{font-size:.75rem;color:var(--gray-600);margin-bottom:var(--sp-2);line-height:1.8}
+.ai-fem .fem-chip{display:inline-block;padding:3px 11px;border-radius:var(--r-full);border:1.5px solid var(--gray-200);margin:2px 3px 2px 0;cursor:pointer;background:var(--surface);color:var(--gray-600);transition:all 160ms var(--ease-out);user-select:none}
+.ai-fem .fem-chip.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.ai-sum{font-size:.75rem;color:var(--text-muted);margin-top:var(--sp-2);line-height:1.6}
+
+
+/* ===== AI排班反馈 ===== */
+.fb-form{display:flex;flex-direction:column;gap:8px}
+.fb-form .fb-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.fb-form textarea{width:100%;height:72px;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:var(--r-md);font-size:.8125rem;font-family:var(--font);background:var(--gray-50);color:var(--text);outline:none;resize:vertical;box-sizing:border-box}
+.fb-form textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-ring);background:var(--surface)}
+.fb-list{margin-top:8px;border-top:1px solid var(--gray-100);padding-top:8px;max-height:200px;overflow-y:auto}
+.fb-item{display:flex;gap:6px;align-items:flex-start;padding:6px 8px;border:1px solid var(--gray-100);border-radius:var(--r-md);margin-bottom:6px;background:var(--gray-50);font-size:.75rem;line-height:1.5}
+.fb-item .fb-d{font-weight:600;color:var(--accent);white-space:nowrap;min-width:80px}
+.fb-item .fb-c{flex:1;color:var(--gray-700);word-break:break-all}
+.fb-item .fb-x{color:var(--gray-400);cursor:pointer;font-weight:700;padding:0 2px}
+.fb-item .fb-x:hover{color:var(--red)}
 </style>
 </head>
 <body>
@@ -754,6 +797,8 @@ th[style*="color:#fff"]{color:#fff!important}
     <option value="">全部月份</option>
   </select>
   <button class="btn btn-o btn-sm" onclick="showStats()">统计</button>
+  <button class="btn btn-ai" onclick="aiOpen()" title="输入品种+细胞复苏日期，自动生成排班">🤖 AI排班</button>
+  <button class="btn btn-o btn-sm" onclick="fbOpen()" title="发现AI排班有误？提交反馈">📮 反馈</button>
   <button class="btn btn-o btn-sm" style="color:var(--red);border-color:var(--red)" onclick="clearMonth()">清空本月</button>
   <select id="personFilter" class="inp" style="width:110px" onchange="setPersonFilter(this.value)">
     <option value="">全部人员</option>
@@ -1736,6 +1781,378 @@ function updateFooterBt(){
 
 $('d').value = today();
 render();
+
+
+// ===== AI自动排班 =====
+// 工艺模板：从细胞复苏当天(day0)推算每天工作内容与班次需求
+// lv: 1=仅早班  2=早班+小夜  3=早班+小夜+大夜
+var AI_TEMPLATES = {
+  '利妥昔': {
+    label: '利妥昔单抗 (复苏→收获约24天)',
+    total: 28,
+    stages: [
+      {w:'WAVE培养',    from:0,  to:5,   lv:1},
+      {w:'100L培养',    from:6,  to:7,   lv:2},
+      {w:'500L培养',    from:8,  to:9,   lv:2},
+      {w:'2500L培养',   from:10, to:22,  lv:3},
+      {w:'补料A/B配液', from:11, to:21, step:2, lv:3},
+      {w:'配离心缓冲液', from:22, to:22,  lv:3},
+      {w:'下罐离心',    from:23, to:23,  lv:3},
+      {w:'收获',        from:23, to:23,  lv:3},
+      {w:'碟片离心',    from:24, to:25,  lv:2},
+      {w:'深层过滤',    from:24, to:25,  lv:2},
+      {w:'纯化',        from:26, to:27,  lv:2},
+      {w:'清场记录',    from:27, to:27,  lv:1}
+    ]
+  },
+  'LNF2501': {
+    label: 'LNF2501 (复苏→收获约23天)',
+    total: 27,
+    stages: [
+      {w:'WAVE培养',    from:0,  to:5,   lv:1},
+      {w:'100L培养',    from:6,  to:7,   lv:2},
+      {w:'500L培养',    from:8,  to:9,   lv:2},
+      {w:'2500L培养',   from:10, to:21,  lv:3},
+      {w:'补料A/B配液', from:11, to:20, step:2, lv:3},
+      {w:'配离心缓冲液', from:21, to:21,  lv:3},
+      {w:'下罐离心',    from:22, to:22,  lv:3},
+      {w:'收获',        from:22, to:22,  lv:3},
+      {w:'碟片离心',    from:23, to:24,  lv:2},
+      {w:'深层过滤',    from:23, to:24,  lv:2},
+      {w:'纯化',        from:25, to:26,  lv:2},
+      {w:'清场记录',    from:26, to:26,  lv:1}
+    ]
+  },
+  '_default': {
+    label: '通用模板 (未匹配品种)',
+    total: 27,
+    stages: [
+      {w:'WAVE培养',    from:0,  to:5,   lv:1},
+      {w:'100L培养',    from:6,  to:7,   lv:2},
+      {w:'500L培养',    from:8,  to:9,   lv:2},
+      {w:'2500L培养',   from:10, to:21,  lv:3},
+      {w:'补料A/B配液', from:11, to:20, step:2, lv:3},
+      {w:'配离心缓冲液', from:21, to:21,  lv:3},
+      {w:'下罐离心',    from:22, to:22,  lv:3},
+      {w:'收获',        from:22, to:22,  lv:3},
+      {w:'碟片离心',    from:23, to:24,  lv:2},
+      {w:'深层过滤',    from:23, to:24,  lv:2},
+      {w:'纯化',        from:25, to:26,  lv:2},
+      {w:'清场记录',    from:26, to:26,  lv:1}
+    ]
+  }
+};
+var _aiFem = [];
+
+function aiOpen(){
+  if(!D.females || !D.females.length){ D.females = ['林新燕']; }
+  _aiFem = D.females.slice();
+  $('mxt').innerHTML = '<span class="mh-icon">🤖</span>AI自动排班';
+  $('mxh').textContent = '输入品种和细胞复苏日期，自动推算每日工作内容并安排人员（可多品种）';
+  var h = '';
+  h += '<section id="aiBox">';
+  h += '<div class="ai-tip">依据 <b>利妥昔</b> / <b>LNF2501</b> 批记录的工艺时间线（复苏 → WAVE → 100L → 500L → 2500L → 补料 → 收获/下罐 → 下游纯化 → 清场）自动推算。生成后可在排班表中<b>随意修改</b>，女生默认不排小夜/大夜。</div>';
+  h += '<div id="aiRows"></div>';
+  h += '<datalist id="aiVarList"></datalist>';
+  h += '<button class="btn btn-o btn-sm ai-add" onclick="aiAddRow()">+ 添加品种</button>';
+  h += '<div class="ai-opts">';
+  h += '<label>早班 <input type="number" id="aiNE" value="4" min="1" max="20"></label>';
+  h += '<label>小夜 <input type="number" id="aiNS" value="5" min="0" max="20"></label>';
+  h += '<label>大夜 <input type="number" id="aiNBN" value="2" min="0" max="20"></label>';
+  h += '<label style="margin-left:8px"><input type="checkbox" id="aiMbMp" checked> 自动分配中午值班/延迟吃饭</label>';
+  h += '<label><input type="checkbox" id="aiOverwrite" checked> 覆盖已有排班</label>';
+  h += '</div>';
+  h += '<div class="ai-fem">女生名单（不排小夜/大夜，点击切换）：<span id="aiFemChips"></span></div>';
+  h += '<div class="ai-sum" id="aiSum"></div>';
+  h += '</section>';
+  $('mxg').innerHTML = h;
+  $('mxg').style.maxHeight = '62vh';
+  $('mxn').style.display = 'none';
+  var ab = $('mx').querySelector('.ab'); if(ab) ab.style.display='none';
+  var bt = $('mx').querySelector('.bt');
+  bt.innerHTML = '<button class="btn btn-o" onclick="mdClose()">取消</button><button class="btn btn-ai" onclick="aiGen()">🤖 生成排班</button>';
+  $('mx').className = 'm s';
+  aiAddRow();
+  aiAddRow();
+  aiFemRender();
+}
+
+function aiVarOptions(){
+  var names = {};
+  D.batch.forEach(function(b){ if(b) names[b]=1; });
+  Object.keys(AI_TEMPLATES).forEach(function(k){ if(k!=='_default') names[k]=1; });
+  var h='';
+  Object.keys(names).forEach(function(k){ h+='<option value="'+esc(k)+'"></option>'; });
+  return h;
+}
+
+function aiAddRow(){
+  var box = $('aiRows'); if(!box) return;
+  var idx = box.children.length;
+  var r = document.createElement('div');
+  r.className = 'ai-row';
+  r.innerHTML =
+    '<input class="inp" style="width:100px" list="aiVarList" placeholder="品种" oninput="aiAutoCol(this)">'+
+    '<input type="date" class="inp" style="width:132px" value="'+today()+'">'+
+    '<select class="inp" style="width:88px">'+
+      '<option value="0">'+(D.batch[0]||'批号1')+'</option>'+
+      '<option value="1">'+(D.batch[1]||'批号2')+'</option>'+
+      '<option value="2">'+(D.batch[2]||'批号3')+'</option>'+
+    '</select>'+
+    '<button class="btn-x" onclick="aiDelRow(this)" title="删除该品种">✕</button>';
+  box.appendChild(r);
+  var dl = $('aiVarList');
+  if(!dl.innerHTML) dl.innerHTML = aiVarOptions();
+  if(idx < 2){
+    var inp = r.querySelector('input[list]');
+    var defs = Object.keys(AI_TEMPLATES).filter(function(k){ return k!=='_default'; });
+    inp.value = defs[idx] || '';
+    aiAutoCol(inp);
+  }
+  aiSum();
+}
+
+function aiDelRow(btn){
+  var row = btn.parentNode;
+  var box = $('aiRows');
+  if(box.children.length <= 1){ msg('至少保留一个品种'); return; }
+  box.removeChild(row);
+  aiSum();
+}
+
+function aiAutoCol(inp){
+  var row = inp.parentNode;
+  var sel = row.querySelector('select');
+  var v = inp.value.trim();
+  for(var i=0;i<D.batch.length;i++){
+    if(D.batch[i] === v){ sel.value = String(i); break; }
+  }
+  aiSum();
+}
+
+function aiFemRender(){
+  var box = $('aiFemChips'); if(!box) return;
+  box.innerHTML = D.people.map(function(n){
+    var on = _aiFem.indexOf(n) >= 0 ? ' on' : '';
+    return '<span class="fem-chip'+on+'" onclick="aiToggleFem(\''+esc(n)+'\')">'+esc(n)+'</span>';
+  }).join('');
+}
+function aiToggleFem(n){
+  var i = _aiFem.indexOf(n);
+  if(i>=0) _aiFem.splice(i,1); else _aiFem.push(n);
+  aiFemRender();
+}
+
+function aiSum(){
+  var box = $('aiRows'); if(!box) return;
+  var filled = 0, days = 0;
+  var rows = box.children;
+  for(var i=0;i<rows.length;i++){
+    var v = rows[i].querySelector('input[list]').value.trim();
+    var d = rows[i].querySelector('input[type=date]').value;
+    if(!v || !d) continue;
+    filled++;
+    var tpl = AI_TEMPLATES[v] || AI_TEMPLATES['_default'];
+    days += tpl.total;
+  }
+  var el = $('aiSum');
+  if(el) el.textContent = filled ? ('已填 '+filled+' 个品种，预计生成约 '+days+' 天排班') : '填写品种与复苏日期后点击「生成排班」';
+}
+
+function aiGen(){
+  var box = $('aiRows');
+  var inputs = [];
+  var rows = box.children;
+  for(var i=0;i<rows.length;i++){
+    var v = rows[i].querySelector('input[list]').value.trim();
+    var d = rows[i].querySelector('input[type=date]').value;
+    if(!v && !d) continue; // 空行跳过
+    if(!v){ msg('第'+(i+1)+'行请填写品种'); return; }
+    if(!d){ msg('第'+(i+1)+'行请选择细胞复苏日期'); return; }
+    var c = parseInt(rows[i].querySelector('select').value);
+    inputs.push({variety:v, date:d, col:c});
+  }
+  if(!inputs.length){ msg('请先填写品种和细胞复苏日期'); return; }
+  if(!D.people.length){ msg('请先在「人员」中添加人员'); return; }
+  var ne = parseInt($('aiNE').value)||4;
+  var ns = parseInt($('aiNS').value)||0;
+  var nbn = parseInt($('aiNBN').value)||0;
+  var doMbMp = $('aiMbMp').checked;
+  var overwrite = $('aiOverwrite').checked;
+  D.females = _aiFem.slice();
+  var lines = inputs.map(function(inp){
+    var tpl = AI_TEMPLATES[inp.variety] || AI_TEMPLATES['_default'];
+    var start = new Date(inp.date);
+    var end = addDays(start, tpl.total - 1);
+    var colName = D.batch[inp.col] || ('批号'+(inp.col+1));
+    var note = AI_TEMPLATES[inp.variety] ? '' : '（无专属模板，用通用模板）';
+    return '▪ '+inp.variety+' → '+colName+'列　'+fmtD(start)+' ~ '+fmtD(end)+'（'+tpl.total+'天）'+note;
+  });
+  var sum = '<b>将自动生成以下排班：</b><br>'+lines.join('<br>')+'<br><br>';
+  sum += '班次：早班 '+ne+' 人 / 小夜 '+ns+' 人 / 大夜 '+nbn+' 人'+(doMbMp?'（自动分配中午值班/延迟吃饭）':'')+'<br>';
+  sum += '女生不排小夜/大夜：'+(D.females.length ? D.females.join('、') : '无')+'<br>';
+  sum += overwrite ? '⚠ 将覆盖已有排班的对应内容' : '跳过已有排班日期，不覆盖';
+  aiConfirm(sum, function(){
+    aiRun(inputs, {e:ne, s:ns, bn:nbn}, doMbMp, overwrite);
+  });
+}
+
+function aiConfirm(html, fn){
+  _cb = fn; _cbMode = 'confirm';
+  $('mxt').innerHTML = '<span class="mh-icon">🤖</span>确认生成';
+  $('mxh').textContent = '';
+  $('mxg').style.display = 'block';
+  $('mxg').style.maxHeight = 'auto';
+  $('mxg').innerHTML = '<div style="padding:14px 4px;text-align:left;font-size:.8125rem;color:var(--gray-700);line-height:1.8;white-space:pre-wrap">'+html+'</div>';
+  $('mxn').style.display = 'none';
+  var ab = $('mx').querySelector('.ab'); if(ab) ab.style.display='none';
+  var bt = $('mx').querySelector('.bt');
+  bt.innerHTML = '<button class="btn btn-o" onclick="mdClose()">取消</button><button class="btn btn-ai" onclick="aiConfirmOk()">确认生成</button>';
+  $('mx').className = 'm s';
+}
+function aiConfirmOk(){
+  var fn = _cb;
+  mdClose();
+  if(fn){ setTimeout(fn, 0); }
+}
+
+function aiRun(inputs, counts, doMbMp, overwrite){
+  var byDate = {};
+  for(var i=0;i<D.rows.length;i++){
+    if(D.rows[i] && D.rows[i].d) byDate[D.rows[i].d] = D.rows[i];
+  }
+  var newCnt = 0, overCnt = 0, skipCnt = 0;
+  inputs.forEach(function(inp){
+    var tpl = AI_TEMPLATES[inp.variety] || AI_TEMPLATES['_default'];
+    for(var day=0; day<tpl.total; day++){
+      var ds = sl(fmtD(addDays(new Date(inp.date), day)));
+      var work = [], lv = 1;
+      tpl.stages.forEach(function(st){
+        var on = st.step ? (day>=st.from && day<=st.to && ((day-st.from)%st.step===0)) : (day>=st.from && day<=st.to);
+        if(on){ work.push(st.w); if(st.lv>lv) lv=st.lv; }
+      });
+      var existing = byDate[ds];
+      if(existing && !overwrite && (existing['w'+inp.col]||[]).length){ skipCnt++; return; }
+      var row = existing || {d:ds,w0:[],w1:[],w2:[],e:[],mb:[],mp:[],s1:[],s2:[],bn:[],of:[]};
+      row['w'+inp.col] = work;
+      var asg = aiAssign(day, counts, lv, doMbMp);
+      row.e  = asg.e.map(function(n){ return {n:n,f:0}; });
+      row.mb = asg.mb.map(function(n){ return {n:n,f:0}; });
+      row.mp = asg.mp.map(function(n){ return {n:n,f:0}; });
+      row.s1 = [];
+      row.s2 = asg.s.map(function(n){ return {n:n,f:0}; });
+      row.bn = asg.bn.map(function(n){ return {n:n,f:0}; });
+      row.of = asg.of.map(function(n){ return {n:n,f:0}; });
+      if(existing) overCnt++; else { byDate[ds]=row; newCnt++; }
+    }
+  });
+  Object.keys(byDate).forEach(function(ds){
+    var has = false;
+    for(var i=0;i<D.rows.length;i++){ if(D.rows[i] && D.rows[i].d===ds){ has=true; break; } }
+    if(!has) D.rows.push(byDate[ds]);
+  });
+  D.rows.sort(function(a,b){ return a.d>b.d?1:(a.d<b.d?-1:0); });
+  save(); render();
+  msg('✅ AI排班完成：新增 '+newCnt+' 天，覆盖 '+overCnt+' 天'+(skipCnt?('，跳过 '+skipCnt+' 天已有内容'):''));
+}
+
+function aiAssign(day, counts, lv, doMbMp){
+  var needS = lv>=2, needBN = lv>=3;
+  var men = [], women = [];
+  D.people.forEach(function(p){
+    if(_aiFem.indexOf(p)>=0) women.push(p); else men.push(p);
+  });
+  var rotAll = rotateArr(D.people.slice(), day);
+  var rotMen = rotateArr(men.slice(), day);
+  var taken = {};
+  var res = {e:[],s:[],bn:[],of:[],mb:[],mp:[]};
+  // 小夜：仅男性
+  var sN = needS ? Math.min(counts.s, rotMen.length) : 0;
+  fillRot(rotMen, res.s, sN, taken, 0);
+  // 大夜：仅男性（接在小夜后面轮转）
+  var bnN = needBN ? Math.min(counts.bn, rotMen.length - res.s.length) : 0;
+  fillRot(rotMen, res.bn, bnN, taken, res.s.length);
+  // 早班：全员轮转中未被占用的人
+  var eN = Math.min(counts.e, D.people.length - res.s.length - res.bn.length);
+  fillRot(rotAll, res.e, eN, taken, 0);
+  // 中午值班/延迟吃饭：从早班前两人中取（大生产日）
+  if(doMbMp && lv>=3 && res.e.length>=2){
+    res.mb = [res.e[0]];
+    res.mp = [res.e[1]];
+  }
+  D.people.forEach(function(p){ if(!taken[p]) res.of.push(p); });
+  return res;
+}
+function rotateArr(arr, k){
+  if(!arr.length) return arr;
+  var a = arr.slice();
+  for(var i=0;i<k;i++) a.push(a.shift());
+  return a;
+}
+function fillRot(pool, out, cnt, taken, startIdx){
+  var i = startIdx || 0, guard = 0;
+  while(out.length < cnt && guard < pool.length * 4){
+    var p = pool[i % pool.length];
+    if(!taken[p]){ out.push(p); taken[p] = 1; }
+    i++; guard++;
+  }
+}
+function addDays(d, n){ var x = new Date(d); x.setDate(x.getDate()+n); return x; }
+function fmtD(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+
+// ===== AI排班反馈（纠错） =====
+function fbOpen(){
+  if(!D.feedback) D.feedback = [];
+  $('mxt').innerHTML = '<span class="mh-icon">📮</span>排班反馈';
+  $('mxh').textContent = '发现AI自动排班有误？选日期写下正确内容，提交后保存到云端，AI下次上线会自动读取修正';
+  var h = '';
+  h += '<section id="fbBox" class="fb-form">';
+  h += '<div class="fb-row">';
+  h += '<input type="date" class="inp" id="fbDate" style="width:132px" value="'+today()+'">';
+  h += '<button class="btn btn-g btn-sm" onclick="fbAdd()">提交反馈</button>';
+  h += '</div>';
+  h += '<textarea id="fbText" placeholder="例如：8月5日 LNF2501 应下罐但实际推迟到8月6日；或某天某列工作内容不对…"></textarea>';
+  h += '<div class="fb-list" id="fbList"></div>';
+  h += '</section>';
+  $('mxg').innerHTML = h;
+  $('mxg').style.maxHeight = '60vh';
+  $('mxn').style.display = 'none';
+  var ab = $('mx').querySelector('.ab'); if(ab) ab.style.display='none';
+  var bt = $('mx').querySelector('.bt');
+  bt.innerHTML = '<button class="btn btn-o" onclick="mdClose()">关闭</button>';
+  $('mx').className = 'm s';
+  fbRender();
+}
+function fbRender(){
+  var box = $('fbList'); if(!box) return;
+  if(!D.feedback || !D.feedback.length){
+    box.innerHTML = '<div style="color:var(--gray-400);text-align:center;padding:10px">暂无反馈</div>';
+    return;
+  }
+  box.innerHTML = D.feedback.map(function(f, i){
+    return '<div class="fb-item"><span class="fb-d">'+esc(f.d||'')+'</span><span class="fb-c">'+esc(f.c||'')+'</span><span class="fb-x" onclick="fbDel('+i+')" title="删除">✕</span></div>';
+  }).join('');
+}
+function fbAdd(){
+  var d = $('fbDate').value;
+  var c = $('fbText').value.trim();
+  if(!d || !c){ msg('请选择日期并填写反馈内容'); return; }
+  if(!D.feedback) D.feedback = [];
+  D.feedback.push({d:sl(d), c:c, t:Date.now()});
+  save();
+  $('fbText').value = '';
+  fbRender();
+  msg('✅ 反馈已提交并保存到云端');
+}
+function fbDel(i){
+  customConfirm('删除这条反馈？', function(){
+    D.feedback.splice(i,1);
+    save();
+    fbRender();
+    msg('已删除反馈');
+  });
+}
 </script>
 </body>
 </html>
