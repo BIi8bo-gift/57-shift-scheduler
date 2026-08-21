@@ -524,6 +524,8 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
   line-height:1.5;letter-spacing:.01em;
   transition:all 120ms var(--ease-out);
   box-shadow:0 1px 0 rgba(0,0,0,.06);
+  border:1px solid var(--gray-200);
+  color:var(--gray-700);
 }
 .tg:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,.1)}
 
@@ -813,17 +815,17 @@ th[style*="color:#fff"]{color:#fff!important}
 <table>
 <thead><tr>
   <th class="cbth"><input type="checkbox" id="selAll" onchange="toggleAll()"></th>
-  <th style="width:105px;min-width:105px;background:var(--gray-50);position:sticky;left:0;z-index:10">日期</th>
-  <th style="background:#dcfce7" id="h0">LNF2529</th>
-  <th style="background:#dbeafe" id="h1">利妥昔</th>
-  <th style="background:#fef9c3" id="h2">LNF2501</th>
-  <th style="background:#dbeafe"><span class="rn" onclick="renH('e')" id="hdr_e">早班</span></th>
-  <th style="background:#93c5fd"><span class="rn" onclick="renH('mb')" id="hdr_mb">中午值班</span></th>
-  <th style="background:#a78bfa;color:#fff"><span class="rn" onclick="renH('mp')" id="hdr_mp">延迟吃饭</span></th>
-  <th style="background:#fef9c3"><span class="rn" onclick="renH('s1')" id="hdr_s1">小夜1:30</span></th>
-  <th style="background:#fde68a"><span class="rn" onclick="renH('s2')" id="hdr_s2">小夜3:30</span></th>
-  <th style="background:#fce7f3"><span class="rn" onclick="renH('bn')" id="hdr_bn">大夜</span></th>
-  <th style="background:#f1f5f9"><span class="rn" onclick="renH('of')" id="hdr_of">休班</span></th>
+  <th style="width:105px;min-width:105px;background:var(--surface);position:sticky;left:0;z-index:10">日期</th>
+  <th style="background:var(--surface)" id="h0">LNF2529</th>
+  <th style="background:var(--surface)" id="h1">利妥昔</th>
+  <th style="background:var(--surface)" id="h2">LNF2501</th>
+  <th style="background:var(--surface)"><span class="rn" onclick="renH('e')" id="hdr_e">早班</span></th>
+  <th style="background:var(--surface)"><span class="rn" onclick="renH('mb')" id="hdr_mb">中午值班</span></th>
+  <th style="background:var(--surface)"><span class="rn" onclick="renH('mp')" id="hdr_mp">延迟吃饭</span></th>
+  <th style="background:var(--surface)"><span class="rn" onclick="renH('s1')" id="hdr_s1">小夜1:30</span></th>
+  <th style="background:var(--surface)"><span class="rn" onclick="renH('s2')" id="hdr_s2">小夜3:30</span></th>
+  <th style="background:var(--surface)"><span class="rn" onclick="renH('bn')" id="hdr_bn">大夜</span></th>
+  <th style="background:var(--surface)"><span class="rn" onclick="renH('of')" id="hdr_of">休班</span></th>
 </tr></thead>
 <tbody id="tb"></tbody>
 </table>
@@ -907,6 +909,7 @@ function initD() {
     people: ['王征征','林新燕','王晓龙','李振','王学灵','崔国干','常远','孙文斌','朱庆强','张峰','毛志琛'],
     batch: ['LNF2529','利妥昔','LNF2501'],
     colHeaders: {e:'早班',mb:'中午值班',mp:'延迟吃饭',s1:'小夜1:30',s2:'小夜3:30',bn:'大夜',of:'休班'},
+    leaders: ['李振','王晓龙'],
     work: ['2500L培养','500L培养','100L培养','WAVE培养','配离心缓冲液','下罐离心','补料A/B配液','纯化','碟片离心','深层过滤','清场记录','收获'],
     rows: []
   };
@@ -1086,30 +1089,30 @@ function render(){
     var delay = di*25;
     var checked = _sel[ri] ? ' checked' : '';
     
-    // 构建每列
+    // 构建每列（背景统一白色）
     function tg(n,c){ return '<span class="tg" style="background:'+c+'">'+esc(n)+'</span>'; }
     
-    function wCell(k, bg, ci){
+    function wCell(k, ci){
       var arr = r[k]||[];
-      var txt = arr.length ? arr.map(function(x){return tg(x,bg);}).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl" style="background:'+bg+'" onclick="pkW('+ri+','+ci+')" title="左键编辑">'+txt+'</td>';
+      var txt = arr.length ? arr.map(function(x){return tg(x,'var(--surface)');}).join('') : '<span style="color:var(--gray-300)">—</span>';
+      return '<td class="cl" style="background:var(--surface)" onclick="pkW('+ri+','+ci+')" title="左键编辑">'+txt+'</td>';
     }
-    function pCell(k, bg){
+    function pCell(k){
       var arr = r[k]||[];
       var txt = arr.length ? arr.map(function(x){
-        var c = x.f ? 'var(--red)' : bg;
+        var c = x.f ? 'var(--red)' : 'var(--surface)';
         return tg(x.n, c);
       }).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl" style="background:'+bg+'" onclick="pkP('+ri+',\''+k+'\')" title="左键编辑">'+txt+'</td>';
+      return '<td class="cl" style="background:var(--surface)" onclick="pkP('+ri+',\''+k+'\')" title="左键编辑">'+txt+'</td>';
     }
     
     var animStyle = _firstRender ? 'animation:rowIn 250ms var(--ease-out) both;animation-delay:'+(di*25)+'ms;' : '';
     h += '<tr style="'+animStyle+'" oncontextmenu="delRow('+ri+');return false">';
     h += '<td class="cbtd"><input type="checkbox" onchange="toggleSel('+ri+')"'+checked+'></td>';
-    h += '<td style="position:sticky;left:0;z-index:5;background:var(--surface);min-width:105px;white-space:nowrap" oncontextmenu="delRow('+ri+');return false">'+esc(r.d)+'</td>';
-    h += wCell('w0','#dcfce7',0)+wCell('w1','#dbeafe',1)+wCell('w2','#fef9c3',2);
-    h += pCell('e','#dbeafe')+pCell('mb','#93c5fd')+pCell('mp','#a78bfa');
-    h += pCell('s1','#fef9c3')+pCell('s2','#fde68a')+pCell('bn','#fce7f3')+pCell('of','#f1f5f9');
+    h += '<td style="position:sticky;left:0;z-index:5;background:var(--surface);min-width:105px;white-space:nowrap" oncontextmenu="delRow('+ri+');return false">'+esc(r.d)+(r.note?'<div style="font-size:10px;color:var(--gray-500);margin-top:2px;line-height:1.4;white-space:normal">'+esc(r.note)+'</div>':'')+'</td>';
+    h += wCell('w0',0)+wCell('w1',1)+wCell('w2',2);
+    h += pCell('e')+pCell('mb')+pCell('mp');
+    h += pCell('s1')+pCell('s2')+pCell('bn')+pCell('of');
     h += '</tr>';
   }
   tb.innerHTML = h;
@@ -1792,9 +1795,9 @@ var AI_TEMPLATES = {
     total: 28,
     stages: [
       {w:'WAVE培养',    from:0,  to:5,   lv:1},
-      {w:'100L培养',    from:6,  to:7,   lv:2},
-      {w:'500L培养',    from:8,  to:9,   lv:2},
-      {w:'2500L培养',   from:10, to:22,  lv:3},
+      {w:'100L培养',    from:6,  to:7,   lv:2, mark:'🔁转100L'},
+      {w:'500L培养',    from:8,  to:9,   lv:2, mark:'🔁转500L'},
+      {w:'2500L培养',   from:10, to:22,  lv:3, mark:'🔁转2500L'},
       {w:'补料A/B配液', from:11, to:21, step:2, lv:3},
       {w:'配离心缓冲液', from:22, to:22,  lv:3},
       {w:'下罐离心',    from:23, to:23,  lv:3},
@@ -1810,9 +1813,9 @@ var AI_TEMPLATES = {
     total: 27,
     stages: [
       {w:'WAVE培养',    from:0,  to:5,   lv:1},
-      {w:'100L培养',    from:6,  to:7,   lv:2},
-      {w:'500L培养',    from:8,  to:9,   lv:2},
-      {w:'2500L培养',   from:10, to:21,  lv:3},
+      {w:'100L培养',    from:6,  to:7,   lv:2, mark:'🔁转100L'},
+      {w:'500L培养',    from:8,  to:9,   lv:2, mark:'🔁转500L'},
+      {w:'2500L培养',   from:10, to:21,  lv:3, mark:'🔁转2500L'},
       {w:'补料A/B配液', from:11, to:20, step:2, lv:3},
       {w:'配离心缓冲液', from:21, to:21,  lv:3},
       {w:'下罐离心',    from:22, to:22,  lv:3},
@@ -1828,9 +1831,9 @@ var AI_TEMPLATES = {
     total: 27,
     stages: [
       {w:'WAVE培养',    from:0,  to:5,   lv:1},
-      {w:'100L培养',    from:6,  to:7,   lv:2},
-      {w:'500L培养',    from:8,  to:9,   lv:2},
-      {w:'2500L培养',   from:10, to:21,  lv:3},
+      {w:'100L培养',    from:6,  to:7,   lv:2, mark:'🔁转100L'},
+      {w:'500L培养',    from:8,  to:9,   lv:2, mark:'🔁转500L'},
+      {w:'2500L培养',   from:10, to:21,  lv:3, mark:'🔁转2500L'},
       {w:'补料A/B配液', from:11, to:20, step:2, lv:3},
       {w:'配离心缓冲液', from:21, to:21,  lv:3},
       {w:'下罐离心',    from:22, to:22,  lv:3},
@@ -1843,15 +1846,23 @@ var AI_TEMPLATES = {
   }
 };
 var _aiFem = [];
+var _aiLead = [];
+
+function aiEnsure(){
+  if(D.females === undefined) D.females = ['林新燕'];
+  if(D.leaders === undefined) D.leaders = ['李振','王晓龙'];
+  if(D.feedback === undefined) D.feedback = [];
+  _aiFem = (D.females||[]).slice();
+  _aiLead = (D.leaders||[]).slice();
+}
 
 function aiOpen(){
-  if(!D.females || !D.females.length){ D.females = ['林新燕']; }
-  _aiFem = D.females.slice();
+  aiEnsure();
   $('mxt').innerHTML = '<span class="mh-icon">🤖</span>AI自动排班';
   $('mxh').textContent = '输入品种和细胞复苏日期，自动推算每日工作内容并安排人员（可多品种）';
   var h = '';
   h += '<section id="aiBox">';
-  h += '<div class="ai-tip">依据 <b>利妥昔</b> / <b>LNF2501</b> 批记录的工艺时间线（复苏 → WAVE → 100L → 500L → 2500L → 补料 → 收获/下罐 → 下游纯化 → 清场）自动推算。生成后可在排班表中<b>随意修改</b>，女生默认不排小夜/大夜。</div>';
+  h += '<div class="ai-tip">依据 <b>利妥昔</b> / <b>LNF2501</b> 批记录的工艺时间线（复苏 → WAVE → 100L → 500L → 2500L → 补料 → 收获/下罐 → 下游纯化 → 清场）自动推算。生成后可在排班表中<b>随意修改</b>。<b>全员上班</b>；女生不排小夜/大夜；小夜/大夜至少1人<b>连班值守</b>（今天小夜=明天大夜）；组长（李振、王晓龙）<b>不自动排班</b>。</div>';
   h += '<div id="aiRows"></div>';
   h += '<datalist id="aiVarList"></datalist>';
   h += '<button class="btn btn-o btn-sm ai-add" onclick="aiAddRow()">+ 添加品种</button>';
@@ -1863,6 +1874,7 @@ function aiOpen(){
   h += '<label><input type="checkbox" id="aiOverwrite" checked> 覆盖已有排班</label>';
   h += '</div>';
   h += '<div class="ai-fem">女生名单（不排小夜/大夜，点击切换）：<span id="aiFemChips"></span></div>';
+  h += '<div class="ai-fem">组长（不自动排班，点击切换）：<span id="aiLeadChips"></span></div>';
   h += '<div class="ai-sum" id="aiSum"></div>';
   h += '</section>';
   $('mxg').innerHTML = h;
@@ -1875,6 +1887,7 @@ function aiOpen(){
   aiAddRow();
   aiAddRow();
   aiFemRender();
+  aiLeadRender();
 }
 
 function aiVarOptions(){
@@ -1930,17 +1943,24 @@ function aiAutoCol(inp){
   aiSum();
 }
 
-function aiFemRender(){
-  var box = $('aiFemChips'); if(!box) return;
+function aiChips(id, cur, fn){
+  var box = $(id); if(!box) return;
   box.innerHTML = D.people.map(function(n){
-    var on = _aiFem.indexOf(n) >= 0 ? ' on' : '';
-    return '<span class="fem-chip'+on+'" onclick="aiToggleFem(\''+esc(n)+'\')">'+esc(n)+'</span>';
+    var on = cur.indexOf(n) >= 0 ? ' on' : '';
+    return '<span class="fem-chip'+on+'" onclick="'+fn+'(\''+esc(n)+'\')">'+esc(n)+'</span>';
   }).join('');
 }
+function aiFemRender(){ aiChips('aiFemChips', _aiFem, 'aiToggleFem'); }
 function aiToggleFem(n){
   var i = _aiFem.indexOf(n);
   if(i>=0) _aiFem.splice(i,1); else _aiFem.push(n);
   aiFemRender();
+}
+function aiLeadRender(){ aiChips('aiLeadChips', _aiLead, 'aiToggleLead'); }
+function aiToggleLead(n){
+  var i = _aiLead.indexOf(n);
+  if(i>=0) _aiLead.splice(i,1); else _aiLead.push(n);
+  aiLeadRender();
 }
 
 function aiSum(){
@@ -1980,6 +2000,7 @@ function aiGen(){
   var doMbMp = $('aiMbMp').checked;
   var overwrite = $('aiOverwrite').checked;
   D.females = _aiFem.slice();
+  D.leaders = _aiLead.slice();
   var lines = inputs.map(function(inp){
     var tpl = AI_TEMPLATES[inp.variety] || AI_TEMPLATES['_default'];
     var start = new Date(inp.date);
@@ -1990,7 +2011,7 @@ function aiGen(){
   });
   var sum = '<b>将自动生成以下排班：</b><br>'+lines.join('<br>')+'<br><br>';
   sum += '班次：早班 '+ne+' 人 / 小夜 '+ns+' 人 / 大夜 '+nbn+' 人'+(doMbMp?'（自动分配中午值班/延迟吃饭）':'')+'<br>';
-  sum += '女生不排小夜/大夜：'+(D.females.length ? D.females.join('、') : '无')+'<br>';
+  sum += '女生不排小夜/大夜：'+(D.females.length ? D.females.join('、') : '无')+'；组长自排：'+(D.leaders.length ? D.leaders.join('、') : '无')+'<br>';
   sum += overwrite ? '⚠ 将覆盖已有排班的对应内容' : '跳过已有排班日期，不覆盖';
   aiConfirm(sum, function(){
     aiRun(inputs, {e:ne, s:ns, bn:nbn}, doMbMp, overwrite);
@@ -2017,6 +2038,7 @@ function aiConfirmOk(){
 }
 
 function aiRun(inputs, counts, doMbMp, overwrite){
+  var nightChain = {};
   var byDate = {};
   for(var i=0;i<D.rows.length;i++){
     if(D.rows[i] && D.rows[i].d) byDate[D.rows[i].d] = D.rows[i];
@@ -2029,13 +2051,21 @@ function aiRun(inputs, counts, doMbMp, overwrite){
       var work = [], lv = 1;
       tpl.stages.forEach(function(st){
         var on = st.step ? (day>=st.from && day<=st.to && ((day-st.from)%st.step===0)) : (day>=st.from && day<=st.to);
-        if(on){ work.push(st.w); if(st.lv>lv) lv=st.lv; }
+        if(on){
+          if(day === st.from && st.mark) work.push(st.mark);
+          work.push(st.w);
+          if(st.lv>lv) lv=st.lv;
+        }
       });
       var existing = byDate[ds];
       if(existing && !overwrite && (existing['w'+inp.col]||[]).length){ skipCnt++; return; }
       var row = existing || {d:ds,w0:[],w1:[],w2:[],e:[],mb:[],mp:[],s1:[],s2:[],bn:[],of:[]};
       row['w'+inp.col] = work;
-      var asg = aiAssign(day, counts, lv, doMbMp);
+      var prevDate = sl(fmtD(addDays(new Date(inp.date), day - 1)));
+      var asg = aiAssign(day, counts, lv, doMbMp, nightChain[prevDate]);
+      if(asg.s && asg.s.length) nightChain[ds] = asg.s[0];
+      if(_aiLead.length) row.note = '👥 组长自排：'+_aiLead.join('、');
+      else delete row.note;
       row.e  = asg.e.map(function(n){ return {n:n,f:0}; });
       row.mb = asg.mb.map(function(n){ return {n:n,f:0}; });
       row.mp = asg.mp.map(function(n){ return {n:n,f:0}; });
@@ -2056,31 +2086,33 @@ function aiRun(inputs, counts, doMbMp, overwrite){
   msg('✅ AI排班完成：新增 '+newCnt+' 天，覆盖 '+overCnt+' 天'+(skipCnt?('，跳过 '+skipCnt+' 天已有内容'):''));
 }
 
-function aiAssign(day, counts, lv, doMbMp){
+function aiAssign(day, counts, lv, doMbMp, prevSmall){
+  // 组长不自动排班；女生不排小夜/大夜；全员上班（不排休班）
   var needS = lv>=2, needBN = lv>=3;
-  var men = [], women = [];
-  D.people.forEach(function(p){
-    if(_aiFem.indexOf(p)>=0) women.push(p); else men.push(p);
-  });
-  var rotAll = rotateArr(D.people.slice(), day);
-  var rotMen = rotateArr(men.slice(), day);
-  var taken = {};
+  var workers = D.people.filter(function(p){ return _aiLead.indexOf(p)<0; });
+  var men = workers.filter(function(p){ return _aiFem.indexOf(p)<0; });
   var res = {e:[],s:[],bn:[],of:[],mb:[],mp:[]};
-  // 小夜：仅男性
-  var sN = needS ? Math.min(counts.s, rotMen.length) : 0;
+  if(!workers.length) return res;
+  // 小夜/大夜人数：有活按配置；没活至少1人连班值守
+  var sN = needS ? Math.min(counts.s, men.length) : 1;
+  var bnN = needBN ? Math.min(counts.bn, Math.max(0, men.length - sN)) : 1;
+  if(sN + bnN > men.length){ sN = Math.max(1, men.length - bnN); }
+  if(sN + bnN > men.length){ bnN = Math.max(0, men.length - sN); }
+  var taken = {};
+  var rotMen = rotateArr(men.slice(), day);
+  var rotAll = rotateArr(workers.slice(), day);
+  // 大夜：优先昨天小夜的人（连班，如今天小夜=明天大夜）
+  if(prevSmall && men.indexOf(prevSmall) >= 0){ res.bn.push(prevSmall); taken[prevSmall] = 1; }
+  fillRot(rotMen, res.bn, bnN, taken, 0);
+  // 小夜：剩余男丁轮转
   fillRot(rotMen, res.s, sN, taken, 0);
-  // 大夜：仅男性（接在小夜后面轮转）
-  var bnN = needBN ? Math.min(counts.bn, rotMen.length - res.s.length) : 0;
-  fillRot(rotMen, res.bn, bnN, taken, res.s.length);
-  // 早班：全员轮转中未被占用的人
-  var eN = Math.min(counts.e, D.people.length - res.s.length - res.bn.length);
-  fillRot(rotAll, res.e, eN, taken, 0);
-  // 中午值班/延迟吃饭：从早班前两人中取（大生产日）
-  if(doMbMp && lv>=3 && res.e.length>=2){
+  // 早班：其余所有人（小夜/大夜没事的都排早班）
+  fillRot(rotAll, res.e, rotAll.length - res.s.length - res.bn.length, taken, 0);
+  // 中午值班/延迟吃饭：从早班前两人中选
+  if(doMbMp && res.e.length >= 2){
     res.mb = [res.e[0]];
     res.mp = [res.e[1]];
   }
-  D.people.forEach(function(p){ if(!taken[p]) res.of.push(p); });
   return res;
 }
 function rotateArr(arr, k){
