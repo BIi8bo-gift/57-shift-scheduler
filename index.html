@@ -409,7 +409,7 @@ input[type=checkbox]{
 
 /* ===== TABLE CONTAINER ===== */
 .wrap{
-  background:transparent;
+  background:var(--bg);
   border-radius:var(--r-lg);
   overflow:auto;
   margin:0 auto var(--sp-4);
@@ -447,7 +447,7 @@ th{
   font-size:.75rem;font-weight:700;
   color:var(--gray-600);
   text-transform:uppercase;letter-spacing:.04em;
-  background:transparent;
+  background:var(--bg);
   position:sticky;top:0;z-index:20;
   border-top:none;
 }
@@ -481,15 +481,15 @@ tbody tr:nth-child(even) td{background:transparent}
 
 body.selmode .cbth{
   display:table-cell;position:sticky;left:0;z-index:11;
-  background:var(--gray-50);width:36px;min-width:36px;
+  background:var(--bg);width:36px;min-width:36px;
 }
 body.selmode .cbtd{
   display:table-cell;position:sticky;left:0;z-index:6;
-  background:var(--surface);width:36px;min-width:36px;
+  background:var(--bg);width:36px;min-width:36px;
 }
 body.selmode td:nth-child(2){
   position:sticky;left:36px;z-index:5;
-  background:var(--surface);min-width:105px;white-space:nowrap;
+  background:var(--bg);min-width:105px;white-space:nowrap;
 }
 body.selmode th:nth-child(2){
   position:sticky;left:36px;z-index:10;min-width:105px;
@@ -818,17 +818,17 @@ th[style*="color:#fff"]{color:#fff!important}
 <table>
 <thead><tr>
   <th class="cbth"><input type="checkbox" id="selAll" onchange="toggleAll()"></th>
-  <th style="width:105px;min-width:105px;background:transparent;position:sticky;left:0;z-index:10">日期</th>
-  <th class="batch-h" style="background:transparent" id="h0"></th>
-  <th class="batch-h" style="background:transparent" id="h1"></th>
-  <th class="batch-h" style="background:transparent" id="h2"></th>
-  <th class="shift-h" style="background:transparent"><span class="rn" onclick="renH('e')" id="hdr_e">早班</span></th>
-  <th style="background:transparent"><span class="rn" onclick="renH('mb')" id="hdr_mb">中午值班</span></th>
-  <th style="background:transparent"><span class="rn" onclick="renH('mp')" id="hdr_mp">延迟吃饭</span></th>
-  <th style="background:transparent"><span class="rn" onclick="renH('s1')" id="hdr_s1">小夜1:30</span></th>
-  <th style="background:transparent"><span class="rn" onclick="renH('s2')" id="hdr_s2">小夜3:30</span></th>
-  <th style="background:transparent"><span class="rn" onclick="renH('bn')" id="hdr_bn">大夜</span></th>
-  <th style="background:transparent"><span class="rn" onclick="renH('of')" id="hdr_of">休班</span></th>
+  <th style="width:105px;min-width:105px;background:var(--bg);position:sticky;left:0;z-index:10">日期</th>
+  <th class="batch-h" style="background:var(--bg)" id="h0"></th>
+  <th class="batch-h" style="background:var(--bg)" id="h1"></th>
+  <th class="batch-h" style="background:var(--bg)" id="h2"></th>
+  <th class="shift-h" style="background:var(--bg)"><span class="rn" onclick="renH('e')" id="hdr_e">早班</span></th>
+  <th style="background:var(--bg)"><span class="rn" onclick="renH('mb')" id="hdr_mb">中午值班</span></th>
+  <th style="background:var(--bg)"><span class="rn" onclick="renH('mp')" id="hdr_mp">延迟吃饭</span></th>
+  <th style="background:var(--bg)"><span class="rn" onclick="renH('s1')" id="hdr_s1">小夜1:30</span></th>
+  <th style="background:var(--bg)"><span class="rn" onclick="renH('s2')" id="hdr_s2">小夜3:30</span></th>
+  <th style="background:var(--bg)"><span class="rn" onclick="renH('bn')" id="hdr_bn">大夜</span></th>
+  <th style="background:var(--bg)"><span class="rn" onclick="renH('of')" id="hdr_of">休班</span></th>
 </tr></thead>
 <tbody id="tb"></tbody>
 </table>
@@ -978,7 +978,7 @@ function drawH(){
     if(!e){
       e=document.createElement('th');
       e.id='h'+i; e.className='batch-h';
-      e.style.background='transparent';
+      e.style.background='var(--bg)';
       if(firstShift && firstShift.parentNode){ firstShift.parentNode.insertBefore(e, firstShift); }
       else if(hdrRow){ hdrRow.appendChild(e); }
     }
@@ -1127,7 +1127,7 @@ function render(){
     var animStyle = _firstRender ? 'animation:rowIn 250ms var(--ease-out) both;animation-delay:'+(di*25)+'ms;' : '';
     h += '<tr style="'+animStyle+'" oncontextmenu="delRow('+ri+');return false">';
     h += '<td class="cbtd"><input type="checkbox" onchange="toggleSel('+ri+')"'+checked+'></td>';
-    h += '<td style="position:sticky;left:0;z-index:5;background:'+cellBg('d')+';min-width:105px;white-space:nowrap" oncontextmenu="delRow('+ri+');return false">'+esc(r.d)+(r.note?'<div style="font-size:10px;color:var(--gray-500);margin-top:2px;line-height:1.4;white-space:normal">'+esc(r.note)+'</div>':'')+'</td>';
+    h += '<td style="position:sticky;left:0;z-index:5;background:'+((r.mark&&r.mark.d&&MARK[r.mark.d])||'var(--bg)')+';min-width:105px;white-space:nowrap" oncontextmenu="delRow('+ri+');return false">'+esc(r.d)+(r.note?'<div style="font-size:10px;color:var(--gray-500);margin-top:2px;line-height:1.4;white-space:normal">'+esc(r.note)+'</div>':'')+'</td>';
     for(var bi=0; bi<D.batch.length; bi++) h += wCell('w'+bi, bi);
     h += pCell('e')+pCell('mb')+pCell('mp');
     h += pCell('s1')+pCell('s2')+pCell('bn')+pCell('of');
