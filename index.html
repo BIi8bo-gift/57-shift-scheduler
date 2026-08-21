@@ -1924,14 +1924,15 @@ function aiAddRow(){
   var r = document.createElement('div');
   r.className = 'ai-row';
   r.innerHTML =
-    '<input class="inp" style="width:100px" list="aiVarList" placeholder="品种" oninput="aiAutoCol(this)">'+
-    '<input type="date" class="inp" style="width:132px" value="'+today()+'">'+
-    '<select class="inp" style="width:88px">'+
-      '<option value="">选列</option>'+
-      '<option value="0">'+(D.batch[0]||'批号1')+'</option>'+
-      '<option value="1">'+(D.batch[1]||'批号2')+'</option>'+
-      '<option value="2">'+(D.batch[2]||'批号3')+'</option>'+
+    '<input class="inp" style="width:92px" list="aiVarList" placeholder="品种" oninput="aiAutoCol(this)">'+
+    '<input type="date" class="inp" style="width:124px" value="'+today()+'">'+
+    '<select class="inp" style="width:72px" onchange="aiOnCol(this)" title="选择第几列">'+
+      '<option value="">列</option>'+
+      '<option value="0">第1列</option>'+
+      '<option value="1">第2列</option>'+
+      '<option value="2">第3列</option>'+
     '</select>'+
+    '<input class="inp ai-bat" style="width:112px" placeholder="批号(可自写)" title="填写本批批号，每批不一样，会自动写到表头" oninput="aiSum()">'+
     '<button class="btn-x" onclick="aiDelRow(this)" title="删除该品种">✕</button>';
   box.appendChild(r);
   var dl = $('aiVarList');
@@ -1956,12 +1957,19 @@ function aiDelRow(btn){
 function aiAutoCol(inp){
   var row = inp.parentNode;
   var sel = row.querySelector('select');
+  var bat = row.querySelector('.ai-bat');
   var v = inp.value.trim();
   var matched = false;
   for(var i=0;i<D.batch.length;i++){
-    if(D.batch[i] === v){ sel.value = String(i); matched = true; break; }
+    if(D.batch[i] === v){ sel.value = String(i); if(bat) bat.value = D.batch[i] || ''; matched = true; break; }
   }
-  if(!matched) sel.value = ''; // 品种名不匹配时不默认列，防止排错列
+  if(!matched){ sel.value = ''; if(bat) bat.value = ''; } // 不匹配时不默认列，防止排错列
+  aiSum();
+}
+function aiOnCol(sel){
+  var row = sel.parentNode;
+  var bat = row.querySelector('.ai-bat');
+  if(sel.value !== '' && bat){ bat.value = D.batch[parseInt(sel.value)] || ''; }
   aiSum();
 }
 
@@ -2012,8 +2020,10 @@ function aiGen(){
     if(!v){ msg('第'+(i+1)+'行请填写品种'); return; }
     if(!d){ msg('第'+(i+1)+'行请选择细胞复苏日期'); return; }
     var c = parseInt(rows[i].querySelector('select').value);
-    if(isNaN(c)){ msg('第'+(i+1)+'行请选择批号列'); return; }
-    inputs.push({variety:v, date:d, col:c});
+    if(isNaN(c)){ msg('第'+(i+1)+'行请选择第几列'); return; }
+    var batEl = rows[i].querySelector('.ai-bat');
+    var bat = batEl ? batEl.value.trim() : '';
+    inputs.push({variety:v, date:d, col:c, batch:bat});
   }
   if(!inputs.length){ msg('请先填写品种和细胞复苏日期'); return; }
   if(!D.people.length){ msg('请先在「人员」中添加人员'); return; }
@@ -2024,13 +2034,17 @@ function aiGen(){
   var overwrite = $('aiOverwrite').checked;
   D.females = _aiFem.slice();
   D.leaders = _aiLead.slice();
+  // 批号先写到表头（每批批号不一样，可自写）
+  inputs.forEach(function(inp){
+    if(inp.batch && inp.batch !== D.batch[inp.col]){ D.batch[inp.col] = inp.batch; }
+  });
   var lines = inputs.map(function(inp){
     var tpl = AI_TEMPLATES[inp.variety] || AI_TEMPLATES['_default'];
     var start = new Date(inp.date);
     var end = addDays(start, tpl.total - 1);
     var colName = D.batch[inp.col] || ('批号'+(inp.col+1));
     var note = AI_TEMPLATES[inp.variety] ? '' : '（无专属模板，用通用模板）';
-    return '▪ '+inp.variety+' → '+colName+'列　'+fmtD(start)+' ~ '+fmtD(end)+'（'+tpl.total+'天）'+note;
+    return '▪ '+inp.variety+' → 第'+(inp.col+1)+'列（批号：'+colName+'）　'+fmtD(start)+' ~ '+fmtD(end)+'（'+tpl.total+'天）'+note;
   });
   var sum = '<b>将自动生成以下排班：</b><br>'+lines.join('<br>')+'<br><br>';
   sum += '班次：早班 '+ne+' 人 / 小夜 '+ns+' 人 / 大夜 '+nbn+' 人'+(doMbMp?'（自动分配中午值班/延迟吃饭）':'')+'<br>';
