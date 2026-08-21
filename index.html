@@ -1127,7 +1127,7 @@ function render(){
     var animStyle = _firstRender ? 'animation:rowIn 250ms var(--ease-out) both;animation-delay:'+(di*25)+'ms;' : '';
     h += '<tr style="'+animStyle+'" oncontextmenu="delRow('+ri+');return false">';
     h += '<td class="cbtd"><input type="checkbox" onchange="toggleSel('+ri+')"'+checked+'></td>';
-    h += '<td style="position:sticky;left:0;z-index:5;background:'+((r.mark&&r.mark.d&&MARK[r.mark.d])||'var(--bg)')+';min-width:105px;white-space:nowrap" oncontextmenu="delRow('+ri+');return false">'+esc(r.d)+(r.note?'<div style="font-size:10px;color:var(--gray-500);margin-top:2px;line-height:1.4;white-space:normal">'+esc(r.note)+'</div>':'')+'</td>';
+    h += '<td style="position:sticky;left:0;z-index:5;background:'+((r.mark&&r.mark.d&&MARK[r.mark.d])||'var(--bg)')+';min-width:105px;white-space:nowrap" oncontextmenu="delRow('+ri+');return false">'+esc(r.d)+'</td>';
     for(var bi=0; bi<D.batch.length; bi++) h += wCell('w'+bi, bi);
     h += pCell('e')+pCell('mb')+pCell('mp');
     h += pCell('s1')+pCell('s2')+pCell('bn')+pCell('of');
@@ -1910,6 +1910,7 @@ function ensureRowCols(){
   for(var i=0;i<D.rows.length;i++){
     var r=D.rows[i]; if(!r) continue;
     for(var j=0;j<D.batch.length;j++){ if(!r['w'+j]) r['w'+j]=[]; }
+    if(r.note) delete r.note;
   }
 }
 function migrateCols(){
@@ -2160,8 +2161,6 @@ function aiRun(inputs, counts, doMbMp, overwrite){
         var prevDate = sl(fmtD(addDays(new Date(inp.date), day - 1)));
         var asg = aiAssign(day, counts, lv, doMbMp, nightChain[prevDate]);
         if(asg.s && asg.s.length) nightChain[ds] = asg.s[0];
-        if(_aiLead.length) row.note = '👥 组长自排：'+_aiLead.join('、');
-        else delete row.note;
         row.e  = asg.e.map(function(n){ return {n:n,f:0}; });
         row.mb = asg.mb.map(function(n){ return {n:n,f:0}; });
         row.mp = asg.mp.map(function(n){ return {n:n,f:0}; });
