@@ -685,8 +685,8 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
 
 /* Modal footer */
 .md .bt{
-  display:flex;gap:var(--sp-2);margin-top:var(--sp-3);
-  justify-content:flex-end;
+  display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-top:var(--sp-3);
+  justify-content:flex-end;align-items:center;
   border-top:1px solid var(--gray-100);padding-top:var(--sp-3);
 }
 
@@ -913,7 +913,7 @@ function initD() {
     batch: ['LNF2529','利妥昔','LNF2501'],
     colHeaders: {e:'早班',mb:'中午值班',mp:'延迟吃饭',s1:'小夜1:30',s2:'小夜3:30',bn:'大夜',of:'休班'},
     leaders: ['李振','王晓龙'],
-    work: ['2500L培养','500L培养','100L培养','WAVE培养','配离心缓冲液','下罐离心','补料A/B配液','纯化','碟片离心','深层过滤','清场记录','收获'],
+    work: ['复苏','2500L培养','500L培养','100L培养','WAVE培养','配离心缓冲液','下罐离心','补料A/B配液','纯化','碟片离心','深层过滤','清场记录','收获'],
     rows: []
   };
 }
@@ -1182,7 +1182,7 @@ function customConfirm(msg, fn){
   $('mxh').textContent = '';
   $('mxg').style.display = 'block';
   $('mxg').style.maxHeight = 'auto';
-  $('mxg').innerHTML = '<div style="padding:16px 4px;text-align:center;font-size:1rem;color:var(--gray-700);line-height:1.6">'+esc(msg)+'</div>';
+  $('mxg').innerHTML = '<section style="padding:16px 4px;text-align:center;font-size:1rem;color:var(--gray-700);line-height:1.6;width:100%">'+esc(msg)+'</section>';
   $('mxn').style.display = 'none';
   var ab=$('mx').querySelector('.ab'); if(ab)ab.style.display='none';
   var bt=$('mx').querySelector('.bt');
@@ -1781,13 +1781,14 @@ function updateFooterBt(){
   }
   var canPaste = _clip && _clip.key === _ctx.key;
   var h = '';
+  h += '<div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;width:100%;margin-bottom:6px">';
   h += '<span style="font-size:11px;color:var(--text-muted);margin-right:2px">标色</span>';
   h += '<button class="btn btn-o btn-sm mk-btn" style="background:#fecaca" onclick="markCell(\'red\')" title="标记为红色">红</button>';
   h += '<button class="btn btn-o btn-sm mk-btn" style="background:#fef9c3" onclick="markCell(\'yellow\')" title="标记为黄色">黄</button>';
   h += '<button class="btn btn-o btn-sm mk-btn" style="background:#dcfce7" onclick="markCell(\'green\')" title="标记为绿色">绿</button>';
   h += '<button class="btn btn-o btn-sm mk-btn" style="background:#dbeafe" onclick="markCell(\'blue\')" title="标记为蓝色">蓝</button>';
   h += '<button class="btn btn-o btn-sm" onclick="markCell(\'\')" title="清除标色">无</button>';
-  h += '<span style="margin:0 2px"></span>';
+  h += '</div>';
   h += '<button class="btn btn-o btn-sm" onclick="copyCell()" title="复制当前安排">📋 复制</button>';
   if(canPaste){
     h += '<button class="btn btn-o btn-sm" onclick="pasteCell()" title="粘贴到当天">📝 粘贴</button>';
@@ -1812,57 +1813,54 @@ render();
 // lv: 1=仅早班  2=早班+小夜  3=早班+小夜+大夜
 var AI_TEMPLATES = {
   '利妥昔': {
-    label: '利妥昔单抗 (复苏→收获约24天)',
-    total: 28,
+    label: '利妥昔单抗 (复苏→收获约23天)',
+    total: 24,
     stages: [
-      {w:'WAVE培养',    from:0,  to:5,   lv:1},
-      {w:'100L培养',    from:6,  to:7,   lv:2, mark:'🔁转100L'},
-      {w:'500L培养',    from:8,  to:9,   lv:2, mark:'🔁转500L'},
-      {w:'2500L培养',   from:10, to:22,  lv:3, mark:'🔁转2500L'},
-      {w:'补料A/B配液', from:11, to:21, step:2, lv:3},
-      {w:'配离心缓冲液', from:22, to:22,  lv:3},
-      {w:'下罐离心',    from:23, to:23,  lv:3, mark:'🔻下罐'},
-      {w:'收获',        from:23, to:23,  lv:3},
-      {w:'碟片离心',    from:24, to:25,  lv:2},
-      {w:'深层过滤',    from:24, to:25,  lv:2},
-      {w:'纯化',        from:26, to:27,  lv:2},
-      {w:'清场记录',    from:27, to:27,  lv:1}
+      {w:'复苏',        from:0,  to:0,   lv:1},
+      {w:'WAVE培养',    from:1,  to:3,   lv:1},
+      {w:'100L培养',    from:4,  to:5,   lv:2, mark:'🔁转100L'},
+      {w:'500L培养',    from:6,  to:7,   lv:2, mark:'🔁转500L'},
+      {w:'2500L培养',   from:8,  to:20,  lv:3, mark:'🔁转2500L'},
+      {w:'补料A/B配液', from:9,  to:19, step:2, lv:3},
+      {w:'配离心缓冲液', from:20, to:20,  lv:3},
+      {w:'下罐离心',    from:21, to:21,  lv:3, mark:'🔻下罐'},
+      {w:'收获',        from:21, to:21,  lv:3},
+      {w:'碟片离心',    from:22, to:23,  lv:2},
+      {w:'深层过滤',    from:22, to:23,  lv:2}
     ]
   },
   'LNF2501': {
-    label: 'LNF2501 (复苏→收获约23天)',
-    total: 27,
+    label: 'LNF2501 (复苏→收获约22天)',
+    total: 23,
     stages: [
-      {w:'WAVE培养',    from:0,  to:5,   lv:1},
-      {w:'100L培养',    from:6,  to:7,   lv:2, mark:'🔁转100L'},
-      {w:'500L培养',    from:8,  to:9,   lv:2, mark:'🔁转500L'},
-      {w:'2500L培养',   from:10, to:21,  lv:3, mark:'🔁转2500L'},
-      {w:'补料A/B配液', from:11, to:20, step:2, lv:3},
-      {w:'配离心缓冲液', from:21, to:21,  lv:3},
-      {w:'下罐离心',    from:22, to:22,  lv:3, mark:'🔻下罐'},
-      {w:'收获',        from:22, to:22,  lv:3},
-      {w:'碟片离心',    from:23, to:24,  lv:2},
-      {w:'深层过滤',    from:23, to:24,  lv:2},
-      {w:'纯化',        from:25, to:26,  lv:2},
-      {w:'清场记录',    from:26, to:26,  lv:1}
+      {w:'复苏',        from:0,  to:0,   lv:1},
+      {w:'WAVE培养',    from:1,  to:3,   lv:1},
+      {w:'100L培养',    from:4,  to:5,   lv:2, mark:'🔁转100L'},
+      {w:'500L培养',    from:6,  to:7,   lv:2, mark:'🔁转500L'},
+      {w:'2500L培养',   from:8,  to:19,  lv:3, mark:'🔁转2500L'},
+      {w:'补料A/B配液', from:9,  to:18, step:2, lv:3},
+      {w:'配离心缓冲液', from:19, to:19,  lv:3},
+      {w:'下罐离心',    from:20, to:20,  lv:3, mark:'🔻下罐'},
+      {w:'收获',        from:20, to:20,  lv:3},
+      {w:'碟片离心',    from:21, to:22,  lv:2},
+      {w:'深层过滤',    from:21, to:22,  lv:2}
     ]
   },
   '_default': {
-    label: '通用模板 (未匹配品种)',
-    total: 27,
+    label: '通用模板 (复苏→收获约22天)',
+    total: 23,
     stages: [
-      {w:'WAVE培养',    from:0,  to:5,   lv:1},
-      {w:'100L培养',    from:6,  to:7,   lv:2, mark:'🔁转100L'},
-      {w:'500L培养',    from:8,  to:9,   lv:2, mark:'🔁转500L'},
-      {w:'2500L培养',   from:10, to:21,  lv:3, mark:'🔁转2500L'},
-      {w:'补料A/B配液', from:11, to:20, step:2, lv:3},
-      {w:'配离心缓冲液', from:21, to:21,  lv:3},
-      {w:'下罐离心',    from:22, to:22,  lv:3, mark:'🔻下罐'},
-      {w:'收获',        from:22, to:22,  lv:3},
-      {w:'碟片离心',    from:23, to:24,  lv:2},
-      {w:'深层过滤',    from:23, to:24,  lv:2},
-      {w:'纯化',        from:25, to:26,  lv:2},
-      {w:'清场记录',    from:26, to:26,  lv:1}
+      {w:'复苏',        from:0,  to:0,   lv:1},
+      {w:'WAVE培养',    from:1,  to:3,   lv:1},
+      {w:'100L培养',    from:4,  to:5,   lv:2, mark:'🔁转100L'},
+      {w:'500L培养',    from:6,  to:7,   lv:2, mark:'🔁转500L'},
+      {w:'2500L培养',   from:8,  to:19,  lv:3, mark:'🔁转2500L'},
+      {w:'补料A/B配液', from:9,  to:18, step:2, lv:3},
+      {w:'配离心缓冲液', from:19, to:19,  lv:3},
+      {w:'下罐离心',    from:20, to:20,  lv:3, mark:'🔻下罐'},
+      {w:'收获',        from:20, to:20,  lv:3},
+      {w:'碟片离心',    from:21, to:22,  lv:2},
+      {w:'深层过滤',    from:21, to:22,  lv:2}
     ]
   }
 };
@@ -1883,7 +1881,7 @@ function aiOpen(){
   $('mxh').textContent = '输入品种和细胞复苏日期，自动推算每日工作内容并安排人员（可多品种）';
   var h = '';
   h += '<section id="aiBox">';
-  h += '<div class="ai-tip">依据 <b>利妥昔</b> / <b>LNF2501</b> 批记录的工艺时间线（复苏 → WAVE → 100L → 500L → 2500L → 补料 → 收获/下罐 → 下游纯化 → 清场）自动推算。生成后可在排班表中<b>随意修改</b>。<b>全员上班</b>；女生不排小夜/大夜；小夜/大夜至少1人<b>连班值守</b>（今天小夜=明天大夜）；组长（李振、王晓龙）<b>不自动排班</b>。</div>';
+  h += '<div class="ai-tip">依据 <b>利妥昔</b> / <b>LNF2501</b> 批记录的工艺时间线（复苏 → WAVE → 100L → 500L → 2500L → 补料 → 收获/下罐 → 碟片离心 → 深层过滤）自动推算。生成后可在排班表中<b>随意修改</b>。<b>全员上班</b>；女生不排小夜/大夜；小夜/大夜至少1人<b>连班值守</b>（今天小夜=明天大夜）；组长（李振、王晓龙）<b>不自动排班</b>。</div>';
   h += '<div id="aiRows"></div>';
   h += '<datalist id="aiVarList"></datalist>';
   h += '<button class="btn btn-o btn-sm ai-add" onclick="aiAddRow()">+ 添加品种</button>';
@@ -2049,7 +2047,7 @@ function aiConfirm(html, fn){
   $('mxh').textContent = '';
   $('mxg').style.display = 'block';
   $('mxg').style.maxHeight = 'auto';
-  $('mxg').innerHTML = '<div style="padding:14px 4px;text-align:left;font-size:.8125rem;color:var(--gray-700);line-height:1.8;white-space:pre-wrap">'+html+'</div>';
+  $('mxg').innerHTML = '<section style="padding:14px 4px;text-align:left;font-size:.8125rem;color:var(--gray-700);line-height:1.8;white-space:pre-wrap;width:100%">'+html+'</section>';
   $('mxn').style.display = 'none';
   var ab = $('mx').querySelector('.ab'); if(ab) ab.style.display='none';
   var bt = $('mx').querySelector('.bt');
