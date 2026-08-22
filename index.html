@@ -2189,6 +2189,8 @@ function aiConfirmOk(){
 
 function aiRun(inputs, counts, doMbMp, overwrite){
   var nightChain = {};
+  var prevBN = null;   // 昨天大夜名单
+  var streaks = {};    // 每人连续夜班天数
   // 生成前自动备份，可随时恢复
   try{ localStorage.setItem('s57aibak', JSON.stringify(D)); }catch(e){}
   var byDate = {};
@@ -2219,8 +2221,13 @@ function aiRun(inputs, counts, doMbMp, overwrite){
       var hasPeople = ['e','mb','mp','s1','s2','bn','of'].some(function(k){ return (row[k]||[]).length>0; });
       if(!(existing && !overwrite && hasPeople)){
         var prevDate = sl(fmtD(addDays(new Date(inp.date), day - 1)));
-        var asg = aiAssign(day, counts, lv, doMbMp, nightChain[prevDate]);
+        var ctx = {weekday: new Date(ds).getDay(), prevBN: prevBN, streaks: streaks};
+        var asg = aiAssign(day, counts, lv, doMbMp, nightChain[prevDate], ctx);
         if(asg.s && asg.s.length) nightChain[ds] = asg.s[0];
+        var nightToday = {};
+        (asg.s||[]).concat(asg.bn||[]).forEach(function(x){ nightToday[x] = 1; });
+        D.people.forEach(function(p){ streaks[p] = nightToday[p] ? ((streaks[p]||0) + 1) : 0; });
+        prevBN = asg.bn.slice();
         row.e  = asg.e.map(function(n){ return {n:n,f:0}; });
         row.mb = asg.mb.map(function(n){ return {n:n,f:0}; });
         row.mp = asg.mp.map(function(n){ return {n:n,f:0}; });
@@ -2243,21 +2250,48 @@ function aiRun(inputs, counts, doMbMp, overwrite){
 }
 
 function aiRules(){
-  // 解析排班规则：谁不排班/不排小夜大夜/只排早班、每班人数
-  var R = {noAll:[], noS:[], noBN:[], onlyM:[], counts:null};
+  // 自动理解排班规则（自然语言）：
+  // - 谁不排班/不排小夜大夜/只排早班、每班人数
+  // - X和Y固定搭班 / X和Y不能同班（错开）
+  // - 不能连续排夜班 / 最多连排N天夜班
+  // - 大夜后必须转早班/休息
+  // - X每周三休 / X周三不排
+  var R = {noAll:[], noS:[], noBN:[], onlyM:[], counts:null, binds:[], separates:[], maxNight:null, afterBig:false, dayOff:[]};
   var cnt = null;
+  var dayMap = {'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'日':0,'天':0};
   (D.rules||[]).forEach(function(txt){
     var s = String(txt||'').replace(/[\s，。；;、,]+/g,'');
     if(!s) return;
+    // 每班人数
     var me = s.match(/早班(\d+)人/), ms = s.match(/小夜(\d+)人/), mb = s.match(/大夜(\d+)人/);
     if(me||ms||mb){ if(!cnt) cnt={e:null,s:null,bn:null}; if(me) cnt.e=+me[1]; if(ms) cnt.s=+ms[1]; if(mb) cnt.bn=+mb[1]; }
+    // 人员班次限制
     var noAll = /(不排班|自己排|自己定|组长|不参与)/.test(s);
     var noSmall = /不排小夜|不上小夜/.test(s);
     var noBig = /不排大夜|不上大夜/.test(s);
     var noNight = (/不排夜|不上夜|不排夜班/.test(s)) && !noSmall && !noBig;
     var onlyM = /只排早班|只上早班|只白班/.test(s);
+    // 搭班 / 错开
+    var negPair = /(不能|不要|别|错开|不一起|不同班|分开)/.test(s);
+    var posPair = /(一起|搭班|同班|固定排|绑定)/.test(s);
+    var namesIn = D.people.filter(function(p){ return s.indexOf(p) >= 0; });
+    if(namesIn.length >= 2){
+      if(negPair && R.separates.length < 6) R.separates.push([namesIn[0], namesIn[1]]);
+      else if(posPair && R.binds.length < 6) R.binds.push([namesIn[0], namesIn[1]]);
+    }
+    // 连续夜班上限
+    var mn = s.match(/最多(?:连(?:续)?(?:排|上)?)(\d+)(?:天)?(?:的)?(?:小夜|大夜|夜班)/) ||
+             s.match(/(?:小夜|大夜|夜班)(?:最多|只能)(?:连(?:续)?(?:排|上)?)(\d+)天/) ||
+             s.match(/(?:小夜|大夜|夜班)(?:不能|不要)(?:连续)?(?:排|上)?(?:超过)?(\d+)天/);
+    if(mn) R.maxNight = Math.max(1, +mn[1]);
+    if(R.maxNight === null && /(?:不能|不要|禁止)(?:连续)?(?:排|上)?(?:小夜|大夜|夜班)/.test(s)) R.maxNight = 1;
+    // 大夜后转早班/休息
+    if(/(?:大夜|夜班)(?:后|之后)(?:必须|要|只能|应|一定)(?:转|排)?(?:早班|休息|休)/.test(s) || /大夜后不排/.test(s)) R.afterBig = true;
+    // 按星期休 / 人员限制
     D.people.forEach(function(p){
       if(s.indexOf(p) < 0) return;
+      var m = s.match(p + '(?:每周|周|星期)([一二三四五六日天])(?:不排|休|休息|不上班)');
+      if(m && dayMap[m[1]] !== undefined) R.dayOff.push({p:p, d:dayMap[m[1]]});
       if(noAll && R.noAll.indexOf(p)<0) R.noAll.push(p);
       if((noSmall||noNight) && R.noS.indexOf(p)<0) R.noS.push(p);
       if((noBig||noNight) && R.noBN.indexOf(p)<0) R.noBN.push(p);
@@ -2268,24 +2302,41 @@ function aiRules(){
   return R;
 }
 
-function aiAssign(day, counts, lv, doMbMp, prevSmall){
-  // 组长不自动排班；女生不排小夜/大夜；全员上班（不排休班）；遵守排班规则
+function aiAssign(day, counts, lv, doMbMp, prevSmall, ctx){
+  // 组长不自动排班；女生不排小夜/大夜；全员上班（不排休班）；遵守排班规则（自动理解）
   var needS = lv>=2, needBN = lv>=3;
+  ctx = ctx || {weekday:0, prevBN:[], streaks:{}};
   var R = aiRules();
-  var workers = D.people.filter(function(p){ return _aiLead.indexOf(p)<0 && R.noAll.indexOf(p)<0; });
-  var nightPool = workers.filter(function(p){ return _aiFem.indexOf(p)<0 && R.onlyM.indexOf(p)<0; });
-  var sPool = nightPool.filter(function(p){ return R.noS.indexOf(p)<0; });
-  var bnPool = nightPool.filter(function(p){ return R.noBN.indexOf(p)<0; });
+  var workers = D.people.filter(function(p){
+    if(_aiLead.indexOf(p) >= 0) return false;
+    if(R.noAll.indexOf(p) >= 0) return false;
+    if(R.dayOff.some(function(o){ return o.p===p && o.d===ctx.weekday; })) return false;
+    return true;
+  });
+  var nightBase = workers.filter(function(p){ return _aiFem.indexOf(p) < 0 && R.onlyM.indexOf(p) < 0; });
+  var prevNightNames = ctx.prevBN || [];
+  var sPool = nightBase.filter(function(p){
+    if(R.noS.indexOf(p) >= 0) return false;
+    if(R.afterBig && prevNightNames.indexOf(p) >= 0) return false;
+    if(R.maxNight && (ctx.streaks[p] || 0) >= R.maxNight) return false;
+    return true;
+  });
+  var bnPool = nightBase.filter(function(p){
+    if(R.noBN.indexOf(p) >= 0) return false;
+    if(R.afterBig && prevNightNames.indexOf(p) >= 0) return false;
+    if(R.maxNight && (ctx.streaks[p] || 0) >= R.maxNight) return false;
+    return true;
+  });
   var res = {e:[],s:[],bn:[],of:[],mb:[],mp:[]};
   if(!workers.length) return res;
   // 小夜/大夜人数：有活按配置；没活至少1人连班值守
   var sN = needS ? Math.min(counts.s, sPool.length) : 1;
   var bnN = needBN ? Math.min(counts.bn, Math.max(0, bnPool.length - sN)) : 1;
-  if(sN + bnN > nightPool.length){ sN = Math.max(1, nightPool.length - bnN); }
-  if(sN + bnN > nightPool.length){ bnN = Math.max(0, nightPool.length - sN); }
+  if(sN + bnN > nightBase.length){ sN = Math.max(1, nightBase.length - bnN); }
+  if(sN + bnN > nightBase.length){ bnN = Math.max(0, nightBase.length - sN); }
   sN = Math.max(0, Math.min(sN, sPool.length));
   bnN = Math.max(0, Math.min(bnN, bnPool.length));
-  if(sN + bnN > nightPool.length){ bnN = Math.max(0, nightPool.length - sN); }
+  if(sN + bnN > nightBase.length){ bnN = Math.max(0, nightBase.length - sN); }
   var taken = {};
   var rotS = rotateArr(sPool.slice(), day);
   var rotBN = rotateArr(bnPool.slice(), day);
@@ -2297,6 +2348,44 @@ function aiAssign(day, counts, lv, doMbMp, prevSmall){
   fillRot(rotS, res.s, sN, taken, 0);
   // 早班：其余所有人（小夜/大夜没事的都排早班）
   fillRot(rotAll, res.e, rotAll.length - res.s.length - res.bn.length, taken, 0);
+  // 搭班/错开修正（res 里存的是名字字符串）
+  function shiftOf(nm){
+    if(res.e.indexOf(nm) >= 0) return 'e';
+    if(res.s.indexOf(nm) >= 0) return 's';
+    if(res.bn.indexOf(nm) >= 0) return 'bn';
+    return '';
+  }
+  function removeP(arr, nm){
+    var i = arr.indexOf(nm);
+    if(i >= 0){ arr.splice(i,1); return true; }
+    return false;
+  }
+  R.binds.forEach(function(g){
+    for(var k=0;k<2;k++){
+      var a=g[k], b=g[1-k];
+      var sa = shiftOf(a), sb = shiftOf(b);
+      if(!sa) continue;
+      if(sa==='e' && workers.indexOf(b) >= 0 && !taken[b]){ res.e.push(b); taken[b]=1; }
+      else if(sa==='s' && sPool.indexOf(b) >= 0 && !taken[b]){ res.s.push(b); taken[b]=1; }
+      else if(sa==='bn' && bnPool.indexOf(b) >= 0 && !taken[b]){ res.bn.push(b); taken[b]=1; }
+      else if(sb && sb !== sa){
+        removeP(res[sb], b);
+        if(sa==='e' && workers.indexOf(b) >= 0){ res.e.push(b); }
+        else if(sa==='s' && sPool.indexOf(b) >= 0){ res.s.push(b); }
+        else if(sa==='bn' && bnPool.indexOf(b) >= 0){ res.bn.push(b); }
+      }
+    }
+  });
+  R.separates.forEach(function(g){
+    var a=g[0], b=g[1];
+    var sa = shiftOf(a), sb = shiftOf(b);
+    if(sa && sa===sb){
+      removeP(res[sb], b);
+      if(sb !== 'e' && workers.indexOf(b) >= 0){ res.e.push(b); }
+      else if(sb !== 's' && sPool.indexOf(b) >= 0){ res.s.push(b); }
+      else if(sb !== 'bn' && bnPool.indexOf(b) >= 0){ res.bn.push(b); }
+    }
+  });
   // 中午值班/延迟吃饭：从早班前两人中选
   if(doMbMp && res.e.length >= 2){
     res.mb = [res.e[0]];
