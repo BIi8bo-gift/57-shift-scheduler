@@ -124,19 +124,6 @@
   *,*::before,*::after { animation-duration:.01ms!important;transition-duration:.01ms!important; }
 }
 
-/* ===== PRINT ===== */
-@media print {
-  body{background:#fff!important;padding:8px;color:#000;}
-  .bar-wrap,.info,.m,.msg,.bar,.btn-o,.btn-sm,.btn-p,.btn-g{display:none!important;}
-  .wrap{box-shadow:none;border:1px solid #ccc;max-width:100%;overflow:visible;max-height:none;border-radius:0}
-  .wrap::before{display:none!important}
-  /* fit table to page width so right columns are not clipped */
-  table{font-size:9px;table-layout:fixed;width:100%!important}
-  th,td{border:1px solid #999;color:#000!important;padding:4px 5px;background:#fff!important;white-space:normal;word-break:break-word}
-  th{white-space:normal}
-  h1{color:#000;font-size:20px}
-}
-
 /* ===== KEYFRAMES ===== */
 @keyframes fadeSlideUp {
   from{opacity:0;transform:translateY(10px)}
@@ -782,6 +769,19 @@ th[style*="color:#fff"]{color:#fff!important}
 .fb-item .fb-c{flex:1;color:var(--gray-700);word-break:break-all}
 .fb-item .fb-x{color:var(--gray-400);cursor:pointer;font-weight:700;padding:0 2px}
 .fb-item .fb-x:hover{color:var(--red)}
+/* ===== PRINT (at end so it overrides base styles) ===== */
+@media print {
+  body{background:#fff!important;padding:8px!important;color:#000!important;}
+  .bar-wrap,.info,.m,.msg,.bar,.btn-o,.btn-sm,.btn-p,.btn-g{display:none!important;}
+  .wrap{box-shadow:none!important;border:1px solid #ccc!important;max-width:100%!important;overflow:visible!important;max-height:none!important;border-radius:0!important}
+  .wrap::before{display:none!important}
+  /* fixed table layout fits page width so right columns are not clipped */
+  table{font-size:9px!important;table-layout:fixed!important;width:100%!important}
+  th,td{border:1px solid #999!important;color:#000!important;padding:4px 5px!important;background:#fff!important;white-space:normal!important;word-break:break-word!important;position:static!important}
+  th{white-space:normal!important}
+  h1{color:#000!important;font-size:20px!important}
+}
+
 </style>
 </head>
 <body>
