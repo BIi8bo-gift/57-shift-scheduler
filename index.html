@@ -128,9 +128,12 @@
 @media print {
   body{background:#fff!important;padding:8px;color:#000;}
   .bar-wrap,.info,.m,.msg,.bar,.btn-o,.btn-sm,.btn-p,.btn-g{display:none!important;}
-  .wrap{box-shadow:none;border:1px solid #ccc;max-width:100%;overflow:visible;max-height:none;}
-  table{font-size:11px}
-  th,td{border:1px solid #999;color:#000!important;padding:6px 8px}
+  .wrap{box-shadow:none;border:1px solid #ccc;max-width:100%;overflow:visible;max-height:none;border-radius:0}
+  .wrap::before{display:none!important}
+  /* fit table to page width so right columns are not clipped */
+  table{font-size:9px;table-layout:fixed;width:100%!important}
+  th,td{border:1px solid #999;color:#000!important;padding:4px 5px;background:#fff!important;white-space:normal;word-break:break-word}
+  th{white-space:normal}
   h1{color:#000;font-size:20px}
 }
 
@@ -809,9 +812,6 @@ th[style*="color:#fff"]{color:#fff!important}
   <button class="btn btn-o btn-sm" onclick="redo()" title="重做 (Ctrl+Y)">↪️ 重做</button>
   <button class="btn btn-o btn-sm" onclick="fbOpen()" title="发现AI排班有误？提交反馈">📮 反馈</button>
   <button class="btn btn-o btn-sm" style="color:var(--red);border-color:var(--red)" onclick="clearMonth()">清空本月</button>
-  <select id="personFilter" class="inp" style="width:110px" onchange="setPersonFilter(this.value)">
-    <option value="">全部人员</option>
-  </select>
   <span style="font-size:12px;color:var(--text-muted)" id="st"></span>
   <span style="font-size:12px;color:var(--text-muted)" id="rangeInfo"></span>
 </div>
@@ -1129,7 +1129,6 @@ function render(){
   ensureRowCols();
   drawH();
   updateMonths();
-  updatePersonFilter();
   var tb = $('tb');
   var filtered = getFilteredRows();
   if(!filtered.length){
@@ -1452,7 +1451,6 @@ function mdDel(i){
 // ===== 导出（8列正确格式） =====
 // ===== 筛选 =====
 var _curMonth='';
-var _filterPerson='';
 function getMonths(){
   var m={};
   for(var i=0;i<D.rows.length;i++){ var k=D.rows[i].d.substring(0,7); m[k]=true; }
@@ -1471,40 +1469,10 @@ function updateMonths(){
   _curMonth=sel.value||'';
 }
 function switchMonth(m){ _curMonth=m; render(); }
-function updatePersonFilter(){
-  var sel=$('personFilter'); if(!sel) return;
-  var cur=sel.value;
-  sel.innerHTML='<option value="">全部人员</option>';
-  D.people.forEach(function(n){
-    var o=document.createElement('option');
-    o.value=n; o.textContent=n; sel.appendChild(o);
-  });
-  if(cur) sel.value=cur;
-  _filterPerson=sel.value;
-}
-function setPersonFilter(name){
-  _filterPerson=name;
-  var sel=$('personFilter');
-  if(sel) sel.value=name;
-  render();
-}
-function clearFilter(){
-  _filterPerson='';
-  var sel=$('personFilter');
-  if(sel) sel.value='';
-  render();
-}
 function getFilteredRows(){
   return D.rows.filter(function(r){
     if(!r) return false;
     if(_curMonth && r.d && r.d.indexOf(_curMonth)!==0) return false;
-    if(_filterPerson){
-      var ks=['e','mb','mp','s1','s2','bn','of'];
-      for(var k=0;k<ks.length;k++){
-        if((r[ks[k]]||[]).some(function(x){ return (typeof x==='object'?x.n:x)===_filterPerson; })) return true;
-      }
-      return false;
-    }
     return true;
   });
 }
@@ -1548,7 +1516,7 @@ function showStats(){
   h+='<th style="padding:4px 8px;border-bottom:1px solid var(--gray-200)">合计</th></tr>';
   names.forEach(function(n){
     var s=stats[n]; var total=s.morning+s.evening+s.night+s.off;
-    h+='<tr style="cursor:pointer" onclick="setPersonFilter(\''+esc(n)+'\');mdClose()">';
+    h+='<tr>';
     h+='<td style="padding:4px 8px;border-bottom:1px solid var(--gray-100);font-weight:500">'+esc(n)+'</td>';
     h+='<td style="padding:4px 8px;border-bottom:1px solid var(--gray-100);text-align:center">'+s.morning+'</td>';
     h+='<td style="padding:4px 8px;border-bottom:1px solid var(--gray-100);text-align:center">'+s.evening+'</td>';
@@ -1558,14 +1526,14 @@ function showStats(){
   });
   h+='</table>';
   $('mxt').innerHTML='<span class="mh-icon">📊</span>出勤统计';
-  $('mxh').textContent='点击人名可筛选查看该人排班';
+  $('mxh').textContent='各班次出勤天数统计';
   $('mxg').innerHTML=h;
   $('mxg').style.maxHeight='60vh';
   $('mxn').style.display='none';
   $('mx').querySelector('.ab').style.display='none';
   var bt=$('mx').querySelector('.bt');
   var bt=$('mx').querySelector('.bt');
-  bt.innerHTML='<button class="btn btn-o" onclick="clearFilter();mdClose()">清除筛选</button><button class="btn btn-p" onclick="mdClose()">关闭</button>';
+  bt.innerHTML='<button class="btn btn-p" onclick="mdClose()">关闭</button>';
   $('mx').className='m s';
 }
 
