@@ -772,6 +772,8 @@ th[style*="color:#fff"]{color:#fff!important}
 .fb-form textarea{width:100%;height:72px;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:var(--r-md);font-size:.8125rem;font-family:var(--font);background:var(--gray-50);color:var(--text);outline:none;resize:vertical;box-sizing:border-box}
 .fb-form textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-ring);background:var(--surface)}
 .fb-list{margin-top:8px;border-top:1px solid var(--gray-100);padding-top:8px;max-height:200px;overflow-y:auto}
+.fb-sec{font-size:.75rem;font-weight:700;color:var(--accent);margin:8px 0 4px;padding-top:8px;border-top:1px dashed var(--gray-200)}
+.fb-sec:first-child{border-top:none;padding-top:0;margin-top:0}
 .fb-item{display:flex;gap:6px;align-items:flex-start;padding:6px 8px;border:1px solid var(--gray-100);border-radius:var(--r-md);margin-bottom:6px;background:var(--gray-50);font-size:.75rem;line-height:1.5}
 .fb-item .fb-d{font-weight:600;color:var(--accent);white-space:nowrap;min-width:80px}
 .fb-item .fb-c{flex:1;color:var(--gray-700);word-break:break-all}
@@ -1937,6 +1939,7 @@ function aiEnsure(){
   if(D.females === undefined) D.females = ['林新燕'];
   if(D.leaders === undefined) D.leaders = ['李振','王晓龙'];
   if(D.feedback === undefined) D.feedback = [];
+  if(D.rules === undefined) D.rules = [];
   _aiFem = (D.females||[]).slice();
   _aiLead = (D.leaders||[]).slice();
 }
@@ -1960,6 +1963,7 @@ function aiOpen(){
   h += '</div>';
   h += '<div class="ai-fem">女生名单（不排小夜/大夜，点击切换）：<span id="aiFemChips"></span></div>';
   h += '<div class="ai-fem">组长（不自动排班，点击切换）：<span id="aiLeadChips"></span></div>';
+  h += '<div class="ai-sum" id="aiRulesDisp"></div>';
   h += '<div class="ai-sum" id="aiSum"></div>';
   h += '</section>';
   $('mxg').innerHTML = h;
@@ -1973,6 +1977,8 @@ function aiOpen(){
   aiAddRow();
   aiFemRender();
   aiLeadRender();
+  var rd = $('aiRulesDisp');
+  if(rd){ rd.textContent = (D.rules && D.rules.length) ? ('📏 当前规则('+D.rules.length+'条)：'+D.rules.join('；')) : '📏 可在「📮反馈」里添加排班规则（如：谁不排夜班/只排早班/每班人数）'; }
 }
 
 function aiVarOptions(){
@@ -2087,6 +2093,12 @@ function aiGen(){
   var ne = parseInt($('aiNE').value)||4;
   var ns = parseInt($('aiNS').value)||0;
   var nbn = parseInt($('aiNBN').value)||0;
+  var Rr = aiRules();
+  if(Rr.counts){
+    if(Rr.counts.e != null) ne = Rr.counts.e;
+    if(Rr.counts.s != null) ns = Rr.counts.s;
+    if(Rr.counts.bn != null) nbn = Rr.counts.bn;
+  }
   var doMbMp = $('aiMbMp').checked;
   var overwrite = $('aiOverwrite').checked;
   D.females = _aiFem.slice();
@@ -2102,6 +2114,7 @@ function aiGen(){
   var sum = '<b>将自动生成以下排班：</b><br>'+lines.join('<br>')+'<br><br>';
   sum += '班次：早班 '+ne+' 人 / 小夜 '+ns+' 人 / 大夜 '+nbn+' 人'+(doMbMp?'（自动分配中午值班/延迟吃饭）':'')+'<br>';
   sum += '女生不排小夜/大夜：'+(D.females.length ? D.females.join('、') : '无')+'；组长自排：'+(D.leaders.length ? D.leaders.join('、') : '无')+'<br>';
+  sum += '📏 排班规则：'+(D.rules && D.rules.length ? D.rules.length+' 条已生效' : '无')+'<br>';
   sum += overwrite ? '⚠ 将覆盖已有排班的对应内容（已自动备份到本机，可在「📮反馈」里恢复）' : '✔ 不覆盖已有排班和已有人员，只填写空白格子';
   aiConfirm(sum, function(){
     aiRun(inputs, {e:ne, s:ns, bn:nbn}, doMbMp, overwrite);
@@ -2182,26 +2195,59 @@ function aiRun(inputs, counts, doMbMp, overwrite){
   msg('✅ AI排班完成：新增 '+newCnt+' 天，覆盖 '+overCnt+' 天'+(skipCnt?('，跳过 '+skipCnt+' 天已有内容'):''));
 }
 
+function aiRules(){
+  // 解析排班规则：谁不排班/不排小夜大夜/只排早班、每班人数
+  var R = {noAll:[], noS:[], noBN:[], onlyM:[], counts:null};
+  var cnt = null;
+  (D.rules||[]).forEach(function(txt){
+    var s = String(txt||'').replace(/[\s，。；;、,]+/g,'');
+    if(!s) return;
+    var me = s.match(/早班(\d+)人/), ms = s.match(/小夜(\d+)人/), mb = s.match(/大夜(\d+)人/);
+    if(me||ms||mb){ if(!cnt) cnt={e:null,s:null,bn:null}; if(me) cnt.e=+me[1]; if(ms) cnt.s=+ms[1]; if(mb) cnt.bn=+mb[1]; }
+    var noAll = /(不排班|自己排|自己定|组长|不参与)/.test(s);
+    var noSmall = /不排小夜|不上小夜/.test(s);
+    var noBig = /不排大夜|不上大夜/.test(s);
+    var noNight = (/不排夜|不上夜|不排夜班/.test(s)) && !noSmall && !noBig;
+    var onlyM = /只排早班|只上早班|只白班/.test(s);
+    D.people.forEach(function(p){
+      if(s.indexOf(p) < 0) return;
+      if(noAll && R.noAll.indexOf(p)<0) R.noAll.push(p);
+      if((noSmall||noNight) && R.noS.indexOf(p)<0) R.noS.push(p);
+      if((noBig||noNight) && R.noBN.indexOf(p)<0) R.noBN.push(p);
+      if(onlyM && R.onlyM.indexOf(p)<0) R.onlyM.push(p);
+    });
+  });
+  R.counts = cnt;
+  return R;
+}
+
 function aiAssign(day, counts, lv, doMbMp, prevSmall){
-  // 组长不自动排班；女生不排小夜/大夜；全员上班（不排休班）
+  // 组长不自动排班；女生不排小夜/大夜；全员上班（不排休班）；遵守排班规则
   var needS = lv>=2, needBN = lv>=3;
-  var workers = D.people.filter(function(p){ return _aiLead.indexOf(p)<0; });
-  var men = workers.filter(function(p){ return _aiFem.indexOf(p)<0; });
+  var R = aiRules();
+  var workers = D.people.filter(function(p){ return _aiLead.indexOf(p)<0 && R.noAll.indexOf(p)<0; });
+  var nightPool = workers.filter(function(p){ return _aiFem.indexOf(p)<0 && R.onlyM.indexOf(p)<0; });
+  var sPool = nightPool.filter(function(p){ return R.noS.indexOf(p)<0; });
+  var bnPool = nightPool.filter(function(p){ return R.noBN.indexOf(p)<0; });
   var res = {e:[],s:[],bn:[],of:[],mb:[],mp:[]};
   if(!workers.length) return res;
   // 小夜/大夜人数：有活按配置；没活至少1人连班值守
-  var sN = needS ? Math.min(counts.s, men.length) : 1;
-  var bnN = needBN ? Math.min(counts.bn, Math.max(0, men.length - sN)) : 1;
-  if(sN + bnN > men.length){ sN = Math.max(1, men.length - bnN); }
-  if(sN + bnN > men.length){ bnN = Math.max(0, men.length - sN); }
+  var sN = needS ? Math.min(counts.s, sPool.length) : 1;
+  var bnN = needBN ? Math.min(counts.bn, Math.max(0, bnPool.length - sN)) : 1;
+  if(sN + bnN > nightPool.length){ sN = Math.max(1, nightPool.length - bnN); }
+  if(sN + bnN > nightPool.length){ bnN = Math.max(0, nightPool.length - sN); }
+  sN = Math.max(0, Math.min(sN, sPool.length));
+  bnN = Math.max(0, Math.min(bnN, bnPool.length));
+  if(sN + bnN > nightPool.length){ bnN = Math.max(0, nightPool.length - sN); }
   var taken = {};
-  var rotMen = rotateArr(men.slice(), day);
+  var rotS = rotateArr(sPool.slice(), day);
+  var rotBN = rotateArr(bnPool.slice(), day);
   var rotAll = rotateArr(workers.slice(), day);
   // 大夜：优先昨天小夜的人（连班，如今天小夜=明天大夜）
-  if(prevSmall && men.indexOf(prevSmall) >= 0){ res.bn.push(prevSmall); taken[prevSmall] = 1; }
-  fillRot(rotMen, res.bn, bnN, taken, 0);
-  // 小夜：剩余男丁轮转
-  fillRot(rotMen, res.s, sN, taken, 0);
+  if(prevSmall && bnPool.indexOf(prevSmall) >= 0){ res.bn.push(prevSmall); taken[prevSmall] = 1; }
+  fillRot(rotBN, res.bn, bnN, taken, 0);
+  // 小夜：剩余夜班池轮转
+  fillRot(rotS, res.s, sN, taken, 0);
   // 早班：其余所有人（小夜/大夜没事的都排早班）
   fillRot(rotAll, res.e, rotAll.length - res.s.length - res.bn.length, taken, 0);
   // 中午值班/延迟吃饭：从早班前两人中选
@@ -2236,12 +2282,17 @@ function fbOpen(){
   $('mxh').textContent = '发现AI自动排班有误？选日期写下正确内容，提交后保存到云端，AI下次上线会自动读取修正';
   var h = '';
   h += '<section id="fbBox" class="fb-form">';
+  h += '<div class="fb-sec">📅 日期纠错（当天排班有误）</div>';
   h += '<div class="fb-row">';
   h += '<input type="date" class="inp" id="fbDate" style="width:132px" value="'+today()+'">';
   h += '<button class="btn btn-g btn-sm" onclick="fbAdd()">提交反馈</button>';
   h += '</div>';
   h += '<textarea id="fbText" placeholder="例如：8月5日 LNF2501 应下罐但实际推迟到8月6日；或某天某列工作内容不对…"></textarea>';
   h += '<div class="fb-list" id="fbList"></div>';
+  h += '<div class="fb-sec">📏 排班规则（长期生效，AI排班自动遵守）</div>';
+  h += '<textarea id="fbRule" placeholder="例如：王征征不排大夜；林新燕只排早班；小夜5人、大夜2人；张峰不排班自己排…"></textarea>';
+  h += '<div class="fb-row"><button class="btn btn-p btn-sm" onclick="fbAddRule()">保存规则</button></div>';
+  h += '<div class="fb-list" id="fbRuleList"></div>';
   h += '</section>';
   $('mxg').innerHTML = h;
   $('mxg').style.maxHeight = '60vh';
@@ -2251,6 +2302,7 @@ function fbOpen(){
   bt.innerHTML = '<button class="btn btn-o btn-sm" onclick="fbRestore()" title="恢复上次AI生成前备份">↩️ 恢复备份</button><button class="btn btn-o" onclick="mdClose()">关闭</button>';
   $('mx').className = 'm s';
   fbRender();
+  fbRuleRender();
 }
 function fbRender(){
   var box = $('fbList'); if(!box) return;
@@ -2279,6 +2331,34 @@ function fbDel(i){
     save();
     fbRender();
     msg('已删除反馈');
+  });
+}
+function fbRuleRender(){
+  var box = $('fbRuleList'); if(!box) return;
+  if(!D.rules || !D.rules.length){
+    box.innerHTML = '<div style="color:var(--gray-400);text-align:center;padding:8px">暂无排班规则</div>';
+    return;
+  }
+  box.innerHTML = D.rules.map(function(t, i){
+    return '<div class="fb-item"><span class="fb-c" style="flex:1">📏 '+esc(t)+'</span><span class="fb-x" onclick="fbDelRule('+i+')" title="删除">✕</span></div>';
+  }).join('');
+}
+function fbAddRule(){
+  var c = $('fbRule').value.trim();
+  if(!c){ msg('请填写排班规则'); return; }
+  if(!D.rules) D.rules = [];
+  D.rules.push(c);
+  save();
+  $('fbRule').value = '';
+  fbRuleRender();
+  msg('✅ 规则已保存，AI排班会自动遵守');
+}
+function fbDelRule(i){
+  customConfirm('删除这条规则？', function(){
+    D.rules.splice(i,1);
+    save();
+    fbRuleRender();
+    msg('已删除规则');
   });
 }
 
