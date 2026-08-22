@@ -805,6 +805,8 @@ th[style*="color:#fff"]{color:#fff!important}
   </select>
   <button class="btn btn-o btn-sm" onclick="showStats()">统计</button>
   <button class="btn btn-ai" onclick="aiOpen()" title="输入品种+细胞复苏日期，自动生成排班">🤖 AI排班</button>
+  <button class="btn btn-o btn-sm" onclick="undo()" title="撤销上一步 (Ctrl+Z)">↩️ 撤销</button>
+  <button class="btn btn-o btn-sm" onclick="redo()" title="重做 (Ctrl+Y)">↪️ 重做</button>
   <button class="btn btn-o btn-sm" onclick="fbOpen()" title="发现AI排班有误？提交反馈">📮 反馈</button>
   <button class="btn btn-o btn-sm" style="color:var(--red);border-color:var(--red)" onclick="clearMonth()">清空本月</button>
   <select id="personFilter" class="inp" style="width:110px" onchange="setPersonFilter(this.value)">
@@ -921,7 +923,43 @@ function initD() {
 }
 initD();
 
+// ===== 撤销/重做 =====
+var _hist = [], _histIdx = -1;
+function pushHist(){
+  try{
+    var cur = JSON.stringify(D);
+    if(_histIdx >= 0 && _hist[_histIdx] === cur) return;
+    _hist = _hist.slice(0, _histIdx + 1);
+    _hist.push(cur);
+    if(_hist.length > 50) _hist.shift();
+    _histIdx = _hist.length - 1;
+  }catch(e){}
+}
+function histInit(){
+  try{ _hist = [JSON.stringify(D)]; _histIdx = 0; }catch(e){}
+}
+function histRestore(s){
+  try{ D = JSON.parse(s); }catch(e){ return; }
+  if(!D.colHeaders) D.colHeaders = {};
+  try{ localStorage.setItem('s57v2', JSON.stringify(D)); localStorage.setItem('s57ts', String(Date.now())); }catch(e){}
+  cloudSave();
+  render();
+}
+function undo(){
+  if(_histIdx <= 0){ msg('没有可撤销的操作'); return; }
+  _histIdx--;
+  histRestore(_hist[_histIdx]);
+  msg('↩️ 已撤销');
+}
+function redo(){
+  if(_histIdx >= _hist.length - 1){ msg('没有可重做的操作'); return; }
+  _histIdx++;
+  histRestore(_hist[_histIdx]);
+  msg('↪️ 已重做');
+}
+
 function save() {
+  pushHist();
   try { localStorage.setItem('s57v2', JSON.stringify(D)); localStorage.setItem('s57ts', String(Date.now())); } catch(e){}
   // 自动保存到云端（防抖）
   if(window._saveTimer) clearTimeout(window._saveTimer);
@@ -942,7 +980,7 @@ function save() {
         localStorage.setItem('s57v2', JSON.stringify(D));
         localStorage.setItem('s57ts', String(cloudTs));
         render();
-        msg('已同步云端最新数据');
+        msg('已同步云端最新数据');histInit();
       }
     });
     return;
@@ -955,7 +993,7 @@ function save() {
     localStorage.setItem('s57v2', JSON.stringify(D));
     localStorage.setItem('s57ts', String(cloudTs));
     render();
-    msg('已恢复云端保存的数据');
+    msg('已恢复云端保存的数据');histInit();
   });
 })();
 function $(id){return document.getElementById(id)}
@@ -1827,6 +1865,15 @@ function updateFooterBt(){
 
 $('d').value = today();
 render();
+histInit();
+document.addEventListener('keydown', function(e){
+  var t = e.target;
+  if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  if(!(e.ctrlKey || e.metaKey)) return;
+  var k = e.key.toLowerCase();
+  if(k === 'z'){ e.preventDefault(); if(e.shiftKey) redo(); else undo(); }
+  else if(k === 'y'){ e.preventDefault(); redo(); }
+});
 
 
 // ===== AI自动排班 =====
