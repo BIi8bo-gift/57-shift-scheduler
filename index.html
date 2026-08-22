@@ -533,7 +533,7 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
   transform:translateX(-50%) translateY(12px);
   background:var(--gray-800);color:#f0eeea;
   backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-  padding:12px 28px;border-radius:var(--r-full);
+  padding:12px 20px;border-radius:14px;
   font-size:.8125rem;font-weight:600;
   z-index:300;opacity:0;pointer-events:none;
   font-family:var(--font);
@@ -541,6 +541,7 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
   border:1px solid rgba(255,255,255,.08);
   transition:opacity 180ms var(--ease-out),transform 250ms var(--ease-spring);
   letter-spacing:.01em;
+  max-width:min(92vw,560px);text-align:center;line-height:1.5;
 }
 .msg.sh{opacity:1;transform:translateX(-50%) translateY(0)}
 
@@ -945,17 +946,73 @@ function histRestore(s){
   cloudSave();
   render();
 }
+// 摘要：描述 b 相对 a 的数据变化（用于撤销/重做提示）
+function diffD(a, b){
+  var parts = [];
+  function J(x){ try{ return JSON.stringify(x||[]); }catch(e){ return ''; } }
+  var om = {}, nm = {};
+  (a.rows||[]).forEach(function(r){ if(r && r.d) om[r.d] = r; });
+  (b.rows||[]).forEach(function(r){ if(r && r.d) nm[r.d] = r; });
+  var added = [], removed = [];
+  for(var d in nm) if(!om[d]) added.push(d);
+  for(var d in om) if(!nm[d]) removed.push(d);
+  function dstr(arr){
+    if(!arr.length) return '';
+    arr.sort();
+    return arr.length <= 3 ? arr.join('、') : arr[0].substring(5) + '~' + arr[arr.length-1].substring(5);
+  }
+  if(added.length) parts.push('新增' + added.length + '天(' + dstr(added) + ')');
+  if(removed.length) parts.push('删除' + removed.length + '天(' + dstr(removed) + ')');
+  var nb = Math.max((a.batch||[]).length, (b.batch||[]).length, 3);
+  var keys = [];
+  for(var i = 0; i < nb; i++) keys.push('w' + i);
+  ['e','mb','mp','s1','s2','bn','of'].forEach(function(k){ keys.push(k); });
+  var workC = 0, personC = 0, marks = 0;
+  for(var d in nm){
+    if(!om[d]) continue;
+    var r1 = om[d], r2 = nm[d];
+    for(var k = 0; k < keys.length; k++){
+      var kk = keys[k];
+      if(J(r1[kk]) !== J(r2[kk])){
+        if(kk.charAt(0) === 'w') workC++; else personC++;
+      }
+      if(J(r1.mark && r1.mark[kk]) !== J(r2.mark && r2.mark[kk])) marks++;
+    }
+    if(J(r1.mark && r1.mark.d) !== J(r2.mark && r2.mark.d)) marks++;
+  }
+  if(workC) parts.push('工作改' + workC + '格');
+  if(personC) parts.push('排班改' + personC + '格');
+  if(marks) parts.push('标色' + marks + '格');
+  if(J(a.batch) !== J(b.batch)) parts.push('批号表头变化');
+  if(J(a.colHeaders) !== J(b.colHeaders)) parts.push('班次名称变化');
+  if(J(a.rules) !== J(b.rules)){
+    var ar = a.rules || [], br = b.rules || [];
+    var addR = br.filter(function(x){ return ar.indexOf(x) < 0; });
+    var delR = ar.filter(function(x){ return br.indexOf(x) < 0; });
+    if(addR.length) parts.push(addR.length === 1 ? '新增规则：' + addR[0] : '新增规则' + addR.length + '条');
+    if(delR.length) parts.push(delR.length === 1 ? '删除规则：' + delR[0] : '删除规则' + delR.length + '条');
+  }
+  if(J(a.people) !== J(b.people)) parts.push('人员名单变化');
+  if(J(a.work) !== J(b.work)) parts.push('工作选项变化');
+  return parts;
+}
 function undo(){
   if(_histIdx <= 0){ msg('没有可撤销的操作'); return; }
+  var target = _hist[_histIdx - 1];
+  var parts = [];
+  try{ parts = diffD(JSON.parse(target), JSON.parse(_hist[_histIdx])); }catch(e){}
   _histIdx--;
-  histRestore(_hist[_histIdx]);
-  msg('↩️ 已撤销');
+  histRestore(target);
+  msg(parts.length ? '↩️ 已撤销：' + parts.join('；') : '↩️ 已撤销', 5000);
 }
 function redo(){
   if(_histIdx >= _hist.length - 1){ msg('没有可重做的操作'); return; }
+  var target = _hist[_histIdx + 1];
+  var parts = [];
+  try{ parts = diffD(JSON.parse(_hist[_histIdx]), JSON.parse(target)); }catch(e){}
   _histIdx++;
-  histRestore(_hist[_histIdx]);
-  msg('↪️ 已重做');
+  histRestore(target);
+  msg(parts.length ? '↪️ 已重做：' + parts.join('；') : '↪️ 已重做', 5000);
 }
 
 function save() {
@@ -1001,9 +1058,9 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function today(){var t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')}
 function sl(d){return d.replace(/-/g,'/')}
 
-function msg(m){
+function msg(m, dur){
   var e=$('msg');e.textContent=m;e.className='msg sh';
-  clearTimeout(window._mt);window._mt=setTimeout(function(){e.className='msg'},2500);
+  clearTimeout(window._mt);window._mt=setTimeout(function(){e.className='msg'},dur||2500);
 }
 
 var _ctx = null;
