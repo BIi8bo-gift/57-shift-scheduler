@@ -2060,9 +2060,10 @@ function aiOpen(){
   h += '<datalist id="aiVarList"></datalist>';
   h += '<button class="btn btn-o btn-sm ai-add" onclick="aiAddRow()">+ 添加品种</button>';
   h += '<div class="ai-opts">';
-  h += '<label>早班 <input type="number" id="aiNE" value="4" min="1" max="20"></label>';
-  h += '<label>小夜 <input type="number" id="aiNS" value="5" min="0" max="20"></label>';
-  h += '<label>大夜 <input type="number" id="aiNBN" value="2" min="0" max="20"></label>';
+  h += '<label>早班 <input type="number" id="aiNE" value="8" min="1" max="20" oninput="aiRemain()"></label>';
+  h += '<label>小夜 <input type="number" id="aiNS" value="1" min="0" max="20" oninput="aiRemain()"></label>';
+  h += '<label>大夜 <input type="number" id="aiNBN" value="1" min="0" max="20" oninput="aiRemain()"></label>';
+  h += '<span id="aiRemain" style="margin-left:8px;font-weight:700;color:var(--accent)"></span>';
   h += '<label style="margin-left:8px"><input type="checkbox" id="aiMbMp" checked> 自动分配中午值班/延迟吃饭</label>';
   h += '<label><input type="checkbox" id="aiOverwrite"> 覆盖已有排班（默认不覆盖）</label>';
   h += '</div>';
@@ -2082,6 +2083,7 @@ function aiOpen(){
   aiAddRow();
   aiFemRender();
   aiLeadRender();
+  aiRemain();
   var rd = $('aiRulesDisp');
   if(rd){ rd.textContent = (D.rules && D.rules.length) ? ('📏 当前规则('+D.rules.length+'条)：'+D.rules.join('；')) : '📏 可在「📮反馈」里添加排班规则（如：谁不排夜班/只排早班/每班人数）'; }
 }
@@ -2177,6 +2179,14 @@ function aiSum(){
   var el = $('aiSum');
   if(el) el.textContent = filled ? ('已填 '+filled+' 个品种，预计生成约 '+days+' 天排班') : '填写品种与复苏日期后点击「生成排班」';
 }
+function aiRemain(){
+  var ne = parseInt($('aiNE').value)||0;
+  var ns = parseInt($('aiNS').value)||0;
+  var nbn = parseInt($('aiNBN').value)||0;
+  var rem = (D.people||[]).length - ne - ns - nbn;
+  var el = $('aiRemain');
+  if(el) el.textContent = '剩余 ' + Math.max(0, rem) + ' 人' + (rem < 0 ? '（超出 '+(-rem)+' 人）' : '');
+}
 
 function aiGen(){
   var box = $('aiRows');
@@ -2195,9 +2205,9 @@ function aiGen(){
   }
   if(!inputs.length){ msg('请先填写品种和细胞复苏日期'); return; }
   if(!D.people.length){ msg('请先在「人员」中添加人员'); return; }
-  var ne = parseInt($('aiNE').value)||4;
-  var ns = parseInt($('aiNS').value)||0;
-  var nbn = parseInt($('aiNBN').value)||0;
+  var ne = parseInt($('aiNE').value)||8;
+  var ns = parseInt($('aiNS').value)||1;
+  var nbn = parseInt($('aiNBN').value)||1;
   var Rr = aiRules();
   if(Rr.counts){
     if(Rr.counts.e != null) ne = Rr.counts.e;
