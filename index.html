@@ -865,7 +865,7 @@ th[style*="color:#fff"]{color:#fff!important}
 <script>
 'use strict';
 
-var D = {people:[], batch:[], work:[], rows:[]};
+var D = {people:[], batch:[], work: ['复苏','一级摇瓶','二级摇瓶','三级摇瓶','四级摇瓶','2500L培养','500L培养','100L培养','WAVE培养','配离心缓冲液','下罐离心','补料A/B配液','纯化','碟片离心','深层过滤','清场记录','收获'], rows:[]};
 
 // ===== 云端存储 (jsonblob.com) =====
 var CLOUD_URL = 'https://jsonblob.com/api/jsonBlob/';
@@ -918,7 +918,7 @@ function initD() {
     batch: ['LNF2529','利妥昔','LNF2501'],
     colHeaders: {e:'早班',mb:'中午值班',mp:'延迟吃饭',s1:'小夜1:30',s2:'小夜3:30',bn:'大夜',of:'休班'},
     leaders: ['李振','王晓龙'],
-    work: ['复苏','2500L培养','500L培养','100L培养','WAVE培养','配离心缓冲液','下罐离心','补料A/B配液','纯化','碟片离心','深层过滤','清场记录','收获'],
+    work: ['复苏','一级摇瓶','二级摇瓶','三级摇瓶','四级摇瓶','2500L培养','500L培养','100L培养','WAVE培养','配离心缓冲液','下罐离心','补料A/B配液','纯化','碟片离心','深层过滤','清场记录','收获'],
     rows: []
   };
 }
@@ -1906,54 +1906,87 @@ document.addEventListener('keydown', function(e){
 // lv: 1=仅早班  2=早班+小夜  3=早班+小夜+大夜
 var AI_TEMPLATES = {
   '利妥昔': {
-    label: '利妥昔单抗 (复苏→收获约23天)',
-    total: 24,
+    label: '利妥昔单抗 (复苏→下罐约36天)',
+    total: 36,
     stages: [
       {w:'复苏',        from:0,  to:0,   lv:1},
-      {w:'WAVE培养',    from:1,  to:3,   lv:1},
-      {w:'100L培养',    from:4,  to:5,   lv:2, mark:'🔁转100L'},
-      {w:'500L培养',    from:6,  to:7,   lv:2, mark:'🔁转500L'},
-      {w:'2500L培养',   from:8,  to:20,  lv:3, mark:'🔁转2500L'},
-      {w:'补料A/B配液', from:9,  to:19, step:2, lv:3},
-      {w:'配离心缓冲液', from:20, to:20,  lv:3},
-      {w:'下罐离心',    from:21, to:21,  lv:3, mark:'🔻下罐'},
-      {w:'收获',        from:21, to:21,  lv:3},
-      {w:'碟片离心',    from:22, to:23,  lv:2},
-      {w:'深层过滤',    from:22, to:23,  lv:2}
+      {w:'一级摇瓶',    from:1,  to:2,   lv:1},
+      {w:'二级摇瓶',    from:3,  to:4,   lv:1},
+      {w:'三级摇瓶',    from:5,  to:6,   lv:1},
+      {w:'四级摇瓶',    from:7,  to:8,   lv:1},
+      {w:'WAVE培养',    from:9,  to:13,  lv:1},
+      {w:'100L培养',    from:13, to:15,  lv:2, mark:'🔁转100L'},
+      {w:'500L培养',    from:15, to:18,  lv:2, mark:'🔁转500L'},
+      {w:'2500L培养',   from:18, to:34,  lv:3, mark:'🔁转2500L'},
+      {w:'补料A/B配液', from:19, to:33,  step:2, lv:3},
+      {w:'配离心缓冲液', from:33, to:34,  lv:3},
+      {w:'下罐离心',    from:34, to:35,  lv:3, mark:'🔻下罐'},
+      {w:'收获',        from:34, to:35,  lv:3},
+      {w:'碟片离心',    from:34, to:35,  lv:3},
+      {w:'深层过滤',    from:34, to:35,  lv:3}
     ]
   },
   'LNF2501': {
-    label: 'LNF2501 (复苏→收获约22天)',
-    total: 23,
+    label: 'LNF2501 (复苏→下罐约29天)',
+    total: 29,
     stages: [
       {w:'复苏',        from:0,  to:0,   lv:1},
-      {w:'WAVE培养',    from:1,  to:3,   lv:1},
-      {w:'100L培养',    from:4,  to:5,   lv:2, mark:'🔁转100L'},
-      {w:'500L培养',    from:6,  to:7,   lv:2, mark:'🔁转500L'},
-      {w:'2500L培养',   from:8,  to:19,  lv:3, mark:'🔁转2500L'},
-      {w:'补料A/B配液', from:9,  to:18, step:2, lv:3},
-      {w:'配离心缓冲液', from:19, to:19,  lv:3},
-      {w:'下罐离心',    from:20, to:20,  lv:3, mark:'🔻下罐'},
-      {w:'收获',        from:20, to:20,  lv:3},
-      {w:'碟片离心',    from:21, to:22,  lv:2},
-      {w:'深层过滤',    from:21, to:22,  lv:2}
+      {w:'一级摇瓶',    from:0,  to:0,   lv:1},
+      {w:'二级摇瓶',    from:1,  to:2,   lv:1},
+      {w:'三级摇瓶',    from:3,  to:4,   lv:1},
+      {w:'四级摇瓶',    from:5,  to:6,   lv:1},
+      {w:'WAVE培养',    from:7,  to:10,  lv:1},
+      {w:'100L培养',    from:10, to:12,  lv:2, mark:'🔁转100L'},
+      {w:'500L培养',    from:12, to:14,  lv:2, mark:'🔁转500L'},
+      {w:'2500L培养',   from:14, to:27,  lv:3, mark:'🔁转2500L'},
+      {w:'补料A/B配液', from:15, to:26,  step:2, lv:3},
+      {w:'配离心缓冲液', from:26, to:27,  lv:3},
+      {w:'下罐离心',    from:27, to:28,  lv:3, mark:'🔻下罐'},
+      {w:'收获',        from:27, to:28,  lv:3},
+      {w:'碟片离心',    from:27, to:28,  lv:3},
+      {w:'深层过滤',    from:27, to:28,  lv:3}
+    ]
+  },
+  'LNF2529': {
+    label: 'LNF2529 (复苏→下罐约36天)',
+    total: 36,
+    stages: [
+      {w:'复苏',        from:0,  to:0,   lv:1},
+      {w:'一级摇瓶',    from:0,  to:1,   lv:1},
+      {w:'二级摇瓶',    from:2,  to:3,   lv:1},
+      {w:'三级摇瓶',    from:4,  to:5,   lv:1},
+      {w:'四级摇瓶',    from:6,  to:7,   lv:1},
+      {w:'WAVE培养',    from:8,  to:11,  lv:1},
+      {w:'100L培养',    from:11, to:14,  lv:2, mark:'🔁转100L'},
+      {w:'500L培养',    from:14, to:16,  lv:2, mark:'🔁转500L'},
+      {w:'2500L培养',   from:16, to:34,  lv:3, mark:'🔁转2500L'},
+      {w:'补料A/B配液', from:17, to:33,  step:2, lv:3},
+      {w:'配离心缓冲液', from:33, to:34,  lv:3},
+      {w:'下罐离心',    from:34, to:35,  lv:3, mark:'🔻下罐'},
+      {w:'收获',        from:34, to:35,  lv:3},
+      {w:'碟片离心',    from:34, to:35,  lv:3},
+      {w:'深层过滤',    from:34, to:35,  lv:3}
     ]
   },
   '_default': {
-    label: '通用模板 (复苏→收获约22天)',
-    total: 23,
+    label: '通用模板 (复苏→下罐约36天)',
+    total: 36,
     stages: [
       {w:'复苏',        from:0,  to:0,   lv:1},
-      {w:'WAVE培养',    from:1,  to:3,   lv:1},
-      {w:'100L培养',    from:4,  to:5,   lv:2, mark:'🔁转100L'},
-      {w:'500L培养',    from:6,  to:7,   lv:2, mark:'🔁转500L'},
-      {w:'2500L培养',   from:8,  to:19,  lv:3, mark:'🔁转2500L'},
-      {w:'补料A/B配液', from:9,  to:18, step:2, lv:3},
-      {w:'配离心缓冲液', from:19, to:19,  lv:3},
-      {w:'下罐离心',    from:20, to:20,  lv:3, mark:'🔻下罐'},
-      {w:'收获',        from:20, to:20,  lv:3},
-      {w:'碟片离心',    from:21, to:22,  lv:2},
-      {w:'深层过滤',    from:21, to:22,  lv:2}
+      {w:'一级摇瓶',    from:0,  to:1,   lv:1},
+      {w:'二级摇瓶',    from:2,  to:3,   lv:1},
+      {w:'三级摇瓶',    from:4,  to:5,   lv:1},
+      {w:'四级摇瓶',    from:6,  to:7,   lv:1},
+      {w:'WAVE培养',    from:8,  to:11,  lv:1},
+      {w:'100L培养',    from:11, to:14,  lv:2, mark:'🔁转100L'},
+      {w:'500L培养',    from:14, to:16,  lv:2, mark:'🔁转500L'},
+      {w:'2500L培养',   from:16, to:34,  lv:3, mark:'🔁转2500L'},
+      {w:'补料A/B配液', from:17, to:33,  step:2, lv:3},
+      {w:'配离心缓冲液', from:33, to:34,  lv:3},
+      {w:'下罐离心',    from:34, to:35,  lv:3, mark:'🔻下罐'},
+      {w:'收获',        from:34, to:35,  lv:3},
+      {w:'碟片离心',    from:34, to:35,  lv:3},
+      {w:'深层过滤',    from:34, to:35,  lv:3}
     ]
   }
 };
@@ -2022,7 +2055,7 @@ function aiOpen(){
   $('mxh').textContent = '输入品种和细胞复苏日期，自动推算每日工作内容并安排人员（可多品种）';
   var h = '';
   h += '<section id="aiBox">';
-  h += '<div class="ai-tip">依据 <b>利妥昔</b> / <b>LNF2501</b> 批记录的工艺时间线（复苏 → WAVE → 100L → 500L → 2500L → 补料 → 收获/下罐 → 碟片离心 → 深层过滤）自动推算。生成后可在排班表中<b>随意修改</b>。<b>全员上班</b>；女生不排小夜/大夜；小夜/大夜至少1人<b>连班值守</b>（今天小夜=明天大夜）；组长（李振、王晓龙）<b>不自动排班</b>。</div>';
+  h += '<div class="ai-tip">依据 <b>利妥昔</b> / <b>LNF2501</b> / <b>LNF2529</b> 批记录的工艺时间线（复苏 → 摇瓶培养 → WAVE → 100L → 500L → 2500L → 补料 → 下罐/收获 → 碟片离心+深层过滤）自动推算。生成后可在排班表中<b>随意修改</b>。<b>全员上班</b>；女生不排小夜/大夜；小夜/大夜至少1人<b>连班值守</b>（今天小夜=明天大夜）；组长（李振、王晓龙）<b>不自动排班</b>。</div>';
   h += '<div id="aiRows"></div>';
   h += '<datalist id="aiVarList"></datalist>';
   h += '<button class="btn btn-o btn-sm ai-add" onclick="aiAddRow()">+ 添加品种</button>';
