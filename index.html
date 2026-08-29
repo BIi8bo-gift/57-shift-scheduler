@@ -1995,8 +1995,12 @@ var _aiLead = [];
 // 固定项目→列映射（利妥昔=第1列, LNF2501=第2列, LNF2529=第3列；新品种自动往后加列）
 var AI_COL_FIX = {'利妥昔':0, 'LNF2501':1, 'LNF2529':2};
 function aiColFor(variety){
-  if(AI_COL_FIX[variety] !== undefined) return AI_COL_FIX[variety];
-  if(D.aiCols && D.aiCols[variety] !== undefined) return D.aiCols[variety];
+  // 固定列映射（利妥昔=0, LNF2501=1, LNF2529=2）：仅当该列表头确实是该品种时才用固定列；
+  // 若该品种在固定列位置已被替换（如批号管理删列后），则退回动态映射，避免覆盖其它品种列内容
+  if(AI_COL_FIX[variety] !== undefined && D.batch[AI_COL_FIX[variety]] === variety) return AI_COL_FIX[variety];
+  var ci = D.batch.indexOf(variety);
+  if(ci >= 0) return ci;
+  if(D.aiCols && D.aiCols[variety] !== undefined && D.batch[D.aiCols[variety]] === variety) return D.aiCols[variety];
   return D.batch.length;
 }
 function aiEnsureCol(variety){
