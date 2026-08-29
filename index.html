@@ -2079,8 +2079,8 @@ function aiOpen(){
   var bt = $('mx').querySelector('.bt');
   bt.innerHTML = '<button class="btn btn-o" onclick="mdClose()">取消</button><button class="btn btn-ai" onclick="aiGen()">🤖 生成排班</button>';
   $('mx').className = 'm s';
-  aiAddRow();
-  aiAddRow();
+  aiAddRow(true);
+  aiAddRow(true);
   aiFemRender();
   aiLeadRender();
   aiRemain();
@@ -2098,7 +2098,7 @@ function aiVarOptions(){
   return h;
 }
 
-function aiAddRow(){
+function aiAddRow(auto){
   var box = $('aiRows'); if(!box) return;
   var idx = box.children.length;
   var r = document.createElement('div');
@@ -2106,17 +2106,19 @@ function aiAddRow(){
   r.innerHTML =
     '<input class="inp" style="width:92px" list="aiVarList" placeholder="品种" oninput="aiAutoCol(this)">'+
     '<input type="date" class="inp" style="width:124px" value="'+today()+'">'+
-    '<input class="inp ai-bat" style="width:112px" placeholder="批号(可自写)" title="填写本批批号，每批不一样，会自动写到表头" oninput="aiSum()">'+
+    '<input class="inp ai-bat" style="width:112px" placeholder="批号(可自写)" title="填写本批批号，每批不一样，会自动写到表头" oninput="aiBatEdited(this)">'+
     '<span class="ai-colinfo" style="font-size:11px;color:var(--text-muted);white-space:nowrap"></span>'+
     '<button class="btn-x" onclick="aiDelRow(this)" title="删除该品种">✕</button>';
   box.appendChild(r);
   var dl = $('aiVarList');
   if(!dl.innerHTML) dl.innerHTML = aiVarOptions();
-  if(idx < 2){
+  // 只有弹窗首次初始化(auto===true)才按顺序预填品种；手动"+添加品种"时留空白行，
+  // 避免删除后行数变化导致重复填成同一品种（如永远第二个是 LNF2501）
+  if(auto === true){
     var inp = r.querySelector('input[list]');
     var defs = Object.keys(AI_TEMPLATES).filter(function(k){ return k!=='_default'; });
     inp.value = defs[idx] || '';
-    aiAutoCol(inp);
+    aiAutoCol(inp, true);
   }
   aiSum();
 }
@@ -2129,7 +2131,13 @@ function aiDelRow(btn){
   aiSum();
 }
 
-function aiAutoCol(inp){
+function aiBatEdited(inp){
+  // 用户手动修改批号 → 打标记，之后切换品种不再自动覆盖该批号
+  inp.setAttribute('data-edited', '1');
+  aiSum();
+}
+
+function aiAutoCol(inp, force){
   var row = inp.parentNode;
   var bat = row.querySelector('.ai-bat');
   var info = row.querySelector('.ai-colinfo');
@@ -2137,7 +2145,11 @@ function aiAutoCol(inp){
   if(v){
     var c = aiColFor(v);
     if(info) info.textContent = '→ 第'+(c+1)+'列'+(c >= D.batch.length ? '（新列）' : '');
-    if(bat) bat.value = D.batch[c] || '';
+    // 批号跟随品种自动同步；但用户手动改过批号(data-edited=1)则永不覆盖
+    if(bat && bat.getAttribute('data-edited') !== '1'){
+      bat.value = D.batch[c] || '';
+      if(force === true) bat.removeAttribute('data-edited');
+    }
   } else {
     if(info) info.textContent = '';
   }
