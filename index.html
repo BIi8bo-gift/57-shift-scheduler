@@ -497,6 +497,19 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
 }
 .rn:hover{color:var(--accent);border-color:var(--accent)}
 
+/* ===== BATCH COLUMN DELETE ===== */
+.batch-h{white-space:nowrap}
+.batch-del{
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-left:4px;width:16px;height:16px;line-height:1;
+  border:none;border-radius:50%;
+  background:transparent;color:var(--gray-400);
+  font-size:10px;cursor:pointer;vertical-align:middle;
+  transition:all 150ms var(--ease-out);
+}
+.batch-del:hover{color:#fff;background:var(--red);border-radius:50%}
+
+
 /* ===== CLICKABLE CELL ===== */
 .cl{
   cursor:pointer;min-height:36px;line-height:1.7;
@@ -1079,7 +1092,8 @@ function drawH(){
       if(firstShift && firstShift.parentNode){ firstShift.parentNode.insertBefore(e, firstShift); }
       else if(hdrRow){ hdrRow.appendChild(e); }
     }
-    e.innerHTML='<span class="rn" onclick="renB('+i+')">'+esc(D.batch[i]||('批号'+(i+1)))+'</span>';
+    e.innerHTML='<span class="rn" onclick="renB('+i+')">'+esc(D.batch[i]||('批号'+(i+1)))+'</span>'+
+      '<button class="batch-del" title="删除此批号整列" onclick="delBatchCol('+i+')">✕</button>';
   }
   // 列数减少时移除多余表头
   while($('h'+D.batch.length)){ var el=$('h'+D.batch.length); if(el.parentNode) el.parentNode.removeChild(el); }
@@ -1097,6 +1111,25 @@ function renB(i){
   customPrompt('输入新批号名称：',o,function(n){
     if(!n||n===o)return;
     D.batch[i]=n;save();drawH();msg('已重命名');
+  });
+}
+function delBatchCol(i){
+  var nm = D.batch[i] || ('第'+(i+1)+'列');
+  customConfirm('确定删除批号「'+nm+'」这一整列？<br><b>该批次所有天的工作/排班内容将被清空</b>，其它批次不受影响。',function(){
+    var oldN = D.batch.length;
+    D.batch.splice(i,1);
+    for(var r=0;r<D.rows.length;r++){
+      var row=D.rows[r]; if(!row)continue;
+      delete row['w'+i];
+      // 后续列的键前移（w(i+1)→wi ... 直到原来最大列）
+      for(var j=i+1;j<oldN;j++){
+        if(row['w'+j] !== undefined){ row['w'+(j-1)] = row['w'+j]; delete row['w'+j]; }
+      }
+    }
+    // aiCols 里映射的相关列信息清理（重新计算）
+    if(D.aiCols){ D.aiCols = {}; }
+    save(); render();
+    msg('已删除批号「'+nm+'」整列');
   });
 }
 function renH(key){
@@ -1915,12 +1948,12 @@ var AI_TEMPLATES = {
       {w:'三级摇瓶',    from:5,  to:6,   lv:1},
       {w:'四级摇瓶',    from:7,  to:8,   lv:1},
       {w:'WAVE培养',    from:9,  to:13,  lv:1},
-      {w:'100L培养',    from:13, to:15,  lv:2, mark:'🔁转100L'},
-      {w:'500L培养',    from:15, to:18,  lv:2, mark:'🔁转500L'},
-      {w:'2500L培养',   from:18, to:34,  lv:3, mark:'🔁转2500L'},
+      {w:'100L培养',    from:13, to:15,  lv:2, mark:'🔁转100L', prep:'备培养液/预热100L'},
+      {w:'500L培养',    from:15, to:18,  lv:2, mark:'🔁转500L', prep:'备培养液/预热500L'},
+      {w:'2500L培养',   from:18, to:34,  lv:3, mark:'🔁转2500L', prep:'备培养液/预热2500L'},
       {w:'补料A/B配液', from:19, to:33,  step:2, lv:3},
       {w:'配离心缓冲液', from:33, to:34,  lv:3},
-      {w:'下罐离心',    from:34, to:35,  lv:3, mark:'🔻下罐'},
+      {w:'下罐离心',    from:34, to:35,  lv:3, mark:'🔻下罐', prep:'备下罐液/缓冲液'},
       {w:'收获',        from:34, to:35,  lv:3},
       {w:'碟片离心',    from:34, to:35,  lv:3},
       {w:'深层过滤',    from:34, to:35,  lv:3}
@@ -1936,12 +1969,12 @@ var AI_TEMPLATES = {
       {w:'三级摇瓶',    from:5,  to:6,   lv:1},
       {w:'四级摇瓶',    from:7,  to:8,   lv:1},
       {w:'WAVE培养',    from:9,  to:13,  lv:1},
-      {w:'100L培养',    from:13, to:15,  lv:2, mark:'🔁转100L'},
-      {w:'500L培养',    from:15, to:17,  lv:2, mark:'🔁转500L'},
-      {w:'2500L培养',   from:17, to:30,  lv:3, mark:'🔁转2500L'},
+      {w:'100L培养',    from:13, to:15,  lv:2, mark:'🔁转100L', prep:'备培养液/预热100L'},
+      {w:'500L培养',    from:15, to:17,  lv:2, mark:'🔁转500L', prep:'备培养液/预热500L'},
+      {w:'2500L培养',   from:17, to:30,  lv:3, mark:'🔁转2500L', prep:'备培养液/预热2500L'},
       {w:'补料A/B配液', from:18, to:29,  step:2, lv:3},
       {w:'配离心缓冲液', from:29, to:30,  lv:3},
-      {w:'下罐离心',    from:30, to:31,  lv:3, mark:'🔻下罐'},
+      {w:'下罐离心',    from:30, to:31,  lv:3, mark:'🔻下罐', prep:'备下罐液/缓冲液'},
       {w:'收获',        from:30, to:31,  lv:3},
       {w:'碟片离心',    from:30, to:31,  lv:3},
       {w:'深层过滤',    from:30, to:31,  lv:3}
@@ -1957,12 +1990,12 @@ var AI_TEMPLATES = {
       {w:'三级摇瓶',    from:4,  to:5,   lv:1},
       {w:'四级摇瓶',    from:6,  to:7,   lv:1},
       {w:'WAVE培养',    from:8,  to:11,  lv:1},
-      {w:'100L培养',    from:11, to:14,  lv:2, mark:'🔁转100L'},
-      {w:'500L培养',    from:14, to:16,  lv:2, mark:'🔁转500L'},
-      {w:'2500L培养',   from:16, to:34,  lv:3, mark:'🔁转2500L'},
+      {w:'100L培养',    from:11, to:14,  lv:2, mark:'🔁转100L', prep:'备培养液/预热100L'},
+      {w:'500L培养',    from:14, to:16,  lv:2, mark:'🔁转500L', prep:'备培养液/预热500L'},
+      {w:'2500L培养',   from:16, to:34,  lv:3, mark:'🔁转2500L', prep:'备培养液/预热2500L'},
       {w:'补料A/B配液', from:17, to:33,  step:2, lv:3},
       {w:'配离心缓冲液', from:33, to:34,  lv:3},
-      {w:'下罐离心',    from:34, to:35,  lv:3, mark:'🔻下罐'},
+      {w:'下罐离心',    from:34, to:35,  lv:3, mark:'🔻下罐', prep:'备下罐液/缓冲液'},
       {w:'收获',        from:34, to:35,  lv:3},
       {w:'碟片离心',    from:34, to:35,  lv:3},
       {w:'深层过滤',    from:34, to:35,  lv:3}
@@ -1978,12 +2011,12 @@ var AI_TEMPLATES = {
       {w:'三级摇瓶',    from:4,  to:5,   lv:1},
       {w:'四级摇瓶',    from:6,  to:7,   lv:1},
       {w:'WAVE培养',    from:8,  to:11,  lv:1},
-      {w:'100L培养',    from:11, to:14,  lv:2, mark:'🔁转100L'},
-      {w:'500L培养',    from:14, to:16,  lv:2, mark:'🔁转500L'},
-      {w:'2500L培养',   from:16, to:34,  lv:3, mark:'🔁转2500L'},
+      {w:'100L培养',    from:11, to:14,  lv:2, mark:'🔁转100L', prep:'备培养液/预热100L'},
+      {w:'500L培养',    from:14, to:16,  lv:2, mark:'🔁转500L', prep:'备培养液/预热500L'},
+      {w:'2500L培养',   from:16, to:34,  lv:3, mark:'🔁转2500L', prep:'备培养液/预热2500L'},
       {w:'补料A/B配液', from:17, to:33,  step:2, lv:3},
       {w:'配离心缓冲液', from:33, to:34,  lv:3},
-      {w:'下罐离心',    from:34, to:35,  lv:3, mark:'🔻下罐'},
+      {w:'下罐离心',    from:34, to:35,  lv:3, mark:'🔻下罐', prep:'备下罐液/缓冲液'},
       {w:'收获',        from:34, to:35,  lv:3},
       {w:'碟片离心',    from:34, to:35,  lv:3},
       {w:'深层过滤',    from:34, to:35,  lv:3}
@@ -2286,6 +2319,15 @@ function aiRun(inputs, counts, doMbMp, overwrite){
     inp.col = aiEnsureCol(inp.variety);
     if(inp.batch && inp.batch !== D.batch[inp.col]) D.batch[inp.col] = inp.batch;
     var tpl = AI_TEMPLATES[inp.variety] || AI_TEMPLATES['_default'];
+    // 收集"提前一天准备"动作：每个转罐/移种日(st.from)的前一天(st.from-1)要做备料/接收培养液/预热
+    var prepMap = {};
+    tpl.stages.forEach(function(st){
+      if(st.prep && st.from > 0){
+        var pd = st.from - 1;
+        if(!prepMap[pd]) prepMap[pd] = [];
+        prepMap[pd].push(st.prep);
+      }
+    });
     for(var day=0; day<tpl.total; day++){
       var ds = sl(fmtD(addDays(new Date(inp.date), day)));
       var work = [], lv = 1;
@@ -2297,6 +2339,8 @@ function aiRun(inputs, counts, doMbMp, overwrite){
           if(st.lv>lv) lv=st.lv;
         }
       });
+      // 转罐/移种日前一天：追加"准备下一罐"动作（接收培养液等）
+      if(prepMap[day]) prepMap[day].forEach(function(p){ work.push(p); });
       var existing = byDate[ds];
       if(existing && !overwrite && (existing['w'+inp.col]||[]).length){ skipCnt++; return; }
       var row = existing || newRow(ds);
