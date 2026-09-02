@@ -2128,8 +2128,8 @@ function aiOpen(){
   var bt = $('mx').querySelector('.bt');
   bt.innerHTML = '<button class="btn btn-o" onclick="mdClose()">取消</button><button class="btn btn-ai" onclick="aiGen()">🤖 生成排班</button>';
   $('mx').className = 'm s';
-  aiAddRow(true);
-  aiAddRow(true);
+  aiAddRow();
+  aiAddRow();
   aiFemRender();
   aiLeadRender();
   aiRemain();
