@@ -1227,9 +1227,7 @@ function render(){
   drawH();
   updateMonths();
   var wrapEl = document.querySelector('.wrap');
-  if(wrapEl){ var _pk=['e','mb','mp','s1','s2','bn','of'],_pw=0;
-    for(var _pi=0;_pi<_pk.length;_pi++){ var _m=0; for(var _ri=0;_ri<D.rows.length;_ri++){ var _a=D.rows[_ri][_pk[_pi]]||[]; if(_a.length>_m)_m=_a.length; } _pw += Math.max(64, _m*64+18); }
-    wrapEl.style.maxWidth = Math.max(1200, 520 + D.batch.length * 210 + _pw) + 'px'; }
+  if(wrapEl){ wrapEl.style.maxWidth = Math.max(1200, 520 + D.batch.length * 210) + 'px'; }
   var tb = $('tb');
   var filtered = getFilteredRows();
   if(!filtered.length){
@@ -1261,7 +1259,7 @@ function render(){
         var c = x.f ? 'var(--red)' : 'transparent';
         return tg(x.n, c);
       }).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl" style="background:'+cellBg(k)+';white-space:nowrap;max-width:none;min-width:64px" onclick="pkP('+ri+',\''+k+'\')" title="左键编辑">'+txt+'</td>';
+      return '<td class="cl" style="background:'+cellBg(k)+'" onclick="pkP('+ri+',\''+k+'\')" title="左键编辑">'+txt+'</td>';
     }
     
     var animStyle = _firstRender ? 'animation:rowIn 250ms var(--ease-out) both;animation-delay:'+(di*25)+'ms;' : '';
