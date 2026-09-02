@@ -422,7 +422,7 @@ input[type=checkbox]{
 
 /* ===== TABLE ===== */
 table{
-  width:100%;table-layout:fixed;border-collapse:collapse;
+  width:100%;border-collapse:collapse;
   font-size:.875rem;font-family:var(--font);
   font-variant-numeric:tabular-nums;
 }
@@ -520,7 +520,7 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
 [data-theme="dark"] .cl:hover{filter:brightness(1.14)}
 
 /* ===== TAGS ===== */
-.shift-h{min-width:120px} .batch-h{min-width:110px} .tg{
+.shift-h{min-width:120px} .batch-h{min-width:200px} .tg{
   display:inline-flex;align-items:center;
   padding:3px 8px;border-radius:var(--r-sm);
   font-size:.6875rem;margin:1px;
@@ -532,10 +532,6 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
   color:var(--gray-700);
 }
 .tg:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,.1)}
-/* 人员列名字竖排（每人一行） */
-.ppl-col{max-width:none}
-.ppl{display:flex;flex-wrap:wrap;justify-content:center}
-.ppl .tg{display:inline-flex;margin:2px}
 
 /* Force shift tag */
 .tg-force{
@@ -1098,7 +1094,7 @@ function drawH(){
     var e=$('h'+i);
     if(!e){
       e=document.createElement('th');
-      e.id='h'+i; e.className='batch-h'; e.style.minWidth='110px';
+      e.id='h'+i; e.className='batch-h'; e.style.minWidth='220px';
       e.style.background='var(--bg)';
       if(firstShift && firstShift.parentNode){ firstShift.parentNode.insertBefore(e, firstShift); }
       else if(hdrRow){ hdrRow.appendChild(e); }
@@ -1230,14 +1226,8 @@ function render(){
   ensureRowCols();
   drawH();
   updateMonths();
-  // dynamic per-column width: personeel columns wide by max count
-  var _pk=['e','mb','mp','s1','s2','bn','of'], _pmax={};
-  for(var _i=0;_i<_pk.length;_i++) _pmax[_pk[_i]]=0;
-  for(var _ri=0;_ri<D.rows.length;_ri++){ var _row=D.rows[_ri]; if(!_row)continue;
-    for(var _i=0;_i<_pk.length;_i++){ var _a=_row[_pk[_i]]||[]; if(_a.length>_pmax[_pk[_i]])_pmax[_pk[_i]]=_a.length; } }
-  var _pw={}; for(var _i=0;_i<_pk.length;_i++){ var _n=_pmax[_pk[_i]]; _pw[_pk[_i]] = Math.max(64, Math.min(_n,3)*64); }
   var wrapEl = document.querySelector('.wrap');
-  if(wrapEl){ wrapEl.style.maxWidth = '1200px'; }
+  if(wrapEl){ wrapEl.style.maxWidth = Math.max(1200, 520 + D.batch.length * 210) + 'px'; }
   var tb = $('tb');
   var filtered = getFilteredRows();
   if(!filtered.length){
@@ -1269,7 +1259,7 @@ function render(){
         var c = x.f ? 'var(--red)' : 'transparent';
         return tg(x.n, c);
       }).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl ppl-col" style="background:'+cellBg(k)+'" onclick="pkP('+ri+',\''+k+'\')" title="左键编辑"><span class="ppl">'+txt+'</span></td>';
+      return '<td class="cl" style="background:'+cellBg(k)+'" onclick="pkP('+ri+',\''+k+'\')" title="左键编辑">'+txt+'</td>';
     }
     
     var animStyle = _firstRender ? 'animation:rowIn 250ms var(--ease-out) both;animation-delay:'+(di*25)+'ms;' : '';
