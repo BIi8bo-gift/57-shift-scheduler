@@ -298,6 +298,7 @@ h1{
   align-items:center;
   justify-content:center;
 }
+.bar-sep{width:1px;height:22px;background:var(--gray-300);align-self:center;margin:0 2px}
 
 .bar label{
   font-weight:600;
@@ -809,26 +810,32 @@ th[style*="color:#fff"]{color:#fff!important}
 
 <div class="bar-wrap">
 <div class="bar">
-  <label>日期</label>
-  <input type="date" class="inp" id="d" style="width:120px" onchange="updateRangeInfo()">
-  <label id="rngLbl">至</label>
-  <input type="date" class="inp" id="d2" style="width:120px" onchange="updateRangeInfo()">
-  <button class="btn btn-p" id="btnAdd" onclick="addRow()" style="min-width:72px">+ 添加</button>
-  <button class="btn btn-p" id="btnSelMode" onclick="toggleSelMode()" style="min-width:72px">删除</button>
-  <button class="btn btn-o btn-sm" onclick="mgr('people')">人员</button>
-  <button class="btn btn-o btn-sm" onclick="mgr('work')">工作</button>
-  <select id="monthSel" class="inp" style="width:110px" onchange="switchMonth(this.value)">
-    <option value="">全部月份</option>
-  </select>
-  <button class="btn btn-o btn-sm" onclick="showStats()">统计</button>
-  <button class="btn btn-ai" onclick="aiOpen()" title="输入品种+细胞复苏日期，自动生成排班">🤖 AI排班</button>
-  <button class="btn btn-o btn-sm" onclick="undo()" title="撤销上一步 (Ctrl+Z)">↩️ 撤销</button>
-  <button class="btn btn-o btn-sm" onclick="redo()" title="重做 (Ctrl+Y)">↪️ 重做</button>
-  <button class="btn btn-o btn-sm" onclick="fbOpen()" title="发现AI排班有误？提交反馈">📮 反馈</button>
-  <button class="btn btn-o btn-sm" style="color:var(--red);border-color:var(--red)" onclick="clearMonth()">清空本月</button>
-  <span style="font-size:12px;color:var(--text-muted)" id="st"></span>
-  <span style="font-size:12px;color:var(--text-muted)" id="rangeInfo"></span>
-</div>
+    <label>日期</label>
+    <input type="date" class="inp" id="d" style="width:120px" onchange="updateRangeInfo()">
+    <label id="rngLbl">至</label>
+    <input type="date" class="inp" id="d2" style="width:120px" onchange="updateRangeInfo()">
+    <span class="bar-sep"></span>
+    <button class="btn btn-p" id="btnAdd" onclick="addRow()" style="min-width:72px">+ 添加</button>
+    <button class="btn btn-p" id="btnSelMode" onclick="toggleSelMode()" style="min-width:72px">删除</button>
+    <span class="bar-sep"></span>
+    <button class="btn btn-ai" onclick="aiOpen()" title="输入品种+细胞复苏日期，自动生成排班">🤖 AI排班</button>
+    <button class="btn btn-o btn-sm" onclick="fbOpen()" title="发现AI排班有误？提交反馈">📮 反馈</button>
+  </div>
+  <div class="bar" style="margin-top:8px">
+    <button class="btn btn-o btn-sm" onclick="mgr('people')">人员</button>
+    <button class="btn btn-o btn-sm" onclick="mgr('work')">工作</button>
+    <select id="monthSel" class="inp" style="width:110px" onchange="switchMonth(this.value)">
+      <option value="">全部月份</option>
+    </select>
+    <button class="btn btn-o btn-sm" onclick="showStats()">统计</button>
+    <span class="bar-sep"></span>
+    <button class="btn btn-o btn-sm" onclick="undo()" title="撤销上一步 (Ctrl+Z)">↩️ 撤销</button>
+    <button class="btn btn-o btn-sm" onclick="redo()" title="重做 (Ctrl+Y)">↪️ 重做</button>
+    <span class="bar-sep"></span>
+    <button class="btn btn-o btn-sm" style="color:var(--red);border-color:var(--red)" onclick="clearMonth()">清空本月</button>
+    <span style="font-size:12px;color:var(--text-muted)" id="st"></span>
+    <span style="font-size:12px;color:var(--text-muted)" id="rangeInfo"></span>
+  </div>
 </div>
 </div>
 
@@ -1093,7 +1100,7 @@ function drawH(){
       else if(hdrRow){ hdrRow.appendChild(e); }
     }
     e.innerHTML='<span class="rn" onclick="renB('+i+')">'+esc(D.batch[i]||('批号'+(i+1)))+'</span>'+
-      '<button class="batch-del" title="删除此批号整列" onclick="delBatchCol('+i+')">✕</button>';
+      '<button class="batch-del" style="right:18px" title="保存此批为模板(学习)" onclick="saveBatchFromCol('+i+')">💾</button><button class="batch-del" title="删除此批号整列" onclick="delBatchCol('+i+')">✕</button>';
   }
   // 列数减少时移除多余表头
   while($('h'+D.batch.length)){ var el=$('h'+D.batch.length); if(el.parentNode) el.parentNode.removeChild(el); }
@@ -1382,6 +1389,7 @@ function pkW(ri, ci){
   $('mxt').innerHTML = '<span class="mh-icon">🥼</span>'+r.d+' — '+title;
   $('mxh').textContent = '点击选择该批号今日工作·蓝色为已选';
   gridW(cur);
+  $('mxg').insertAdjacentHTML('beforeend', '<div style="margin-top:10px"><button class="btn btn-o btn-sm" onclick="openStageCount('+ri+','+ci+')">🔢 改这段人数</button></div>');
   $('mxn').placeholder = '新工作内容';
   $('mx').className = 'm s';
   updateFooterBt();
@@ -2082,6 +2090,7 @@ function aiEnsure(){
   if(D.leaders === undefined) D.leaders = ['李振','王晓龙'];
   if(D.feedback === undefined) D.feedback = [];
   if(D.rules === undefined) D.rules = [];
+  if(D.batchLib === undefined) D.batchLib = [];
   _aiFem = (D.females||[]).slice();
   _aiLead = (D.leaders||[]).slice();
 }
@@ -2237,6 +2246,140 @@ function aiRemain(){
   if(el) el.textContent = '剩余 ' + Math.max(0, rem) + ' 人' + (rem < 0 ? '（超出 '+(-rem)+' 人）' : '');
 }
 
+
+// ===== 保留批次并学习（批次记忆） =====
+function learnedTemplate(variety){
+  if(!D.batchLib) return null;
+  var saved = D.batchLib.filter(function(b){ return b && b.variety===variety && b.segs && b.segs.length; });
+  if(!saved.length) return null;
+  var base = AI_TEMPLATES[variety] || AI_TEMPLATES['_default'];
+  var agg = {};
+  saved.forEach(function(b){
+    (b.segs||[]).forEach(function(s){
+      if(!agg[s.w]) agg[s.w]={fs:[],ts:[]};
+      agg[s.w].fs.push(s.from); agg[s.w].ts.push(s.to);
+    });
+  });
+  function med(arr){ arr=arr.slice().sort(function(a,b){return a-b;}); var m=Math.floor(arr.length/2); return (arr.length%2)?arr[m]:Math.round((arr[m-1]+arr[m])/2); }
+  var stages=[];
+  Object.keys(agg).forEach(function(w){
+    var from=med(agg[w].fs), to=med(agg[w].ts), lv=1, mark, prep;
+    (base.stages||[]).forEach(function(bs){ if(bs.w===w){ lv=bs.lv||1; mark=bs.mark; prep=bs.prep; } });
+    var st={w:w, from:from, to:to, lv:lv};
+    if(mark) st.mark=mark; if(prep) st.prep=prep;
+    stages.push(st);
+  });
+  stages.sort(function(a,b){ return a.from-b.from; });
+  var total=stages.reduce(function(mx,s){ return Math.max(mx, s.to+1); }, 1);
+  return {label:(''+variety+'（学习模板·'+saved.length+'批）'), total:total, stages:stages};
+}
+function saveBatchFromCol(col){
+  var variety = D.batch[col]; if(!variety){ msg('该列为空'); return; }
+  var startDs=null;
+  for(var i=0;i<D.rows.length;i++){ var rr=D.rows[i]; if(rr && rr.d && (rr['w'+col]||[]).indexOf('复苏')>=0){ startDs=rr.d; break; } }
+  if(!startDs){ msg('该列未找到「复苏」，请先排好这个批次'); return; }
+  var ref = AI_TEMPLATES[variety] || AI_TEMPLATES['_default'];
+  var stageSet={}; (ref.stages||[]).forEach(function(s){ stageSet[s.w]=1; });
+  var offs={};
+  for(var i=0;i<D.rows.length;i++){ var rr=D.rows[i]; if(!rr || !rr.d) continue;
+    var off=Math.round((new Date(rr.d)-new Date(startDs))/86400000);
+    (rr['w'+col]||[]).forEach(function(x){
+      if(!stageSet[x]) return;
+      if(!offs[x]) offs[x]={min:off,max:off};
+      if(off<offs[x].min) offs[x].min=off; if(off>offs[x].max) offs[x].max=off;
+    });
+  }
+  var segs=Object.keys(offs).map(function(w){ return {w:w, from:offs[w].min, to:offs[w].max}; });
+  if(!segs.length){ msg('该列没有可保存的核心工序'); return; }
+  if(!D.batchLib) D.batchLib=[];
+  D.batchLib.push({variety:variety, batch:D.batch[col], revival:startDs, segs:segs, savedAt:today()});
+  save();
+  msg('💾 已保存 '+variety+' 批次为模板（'+segs.length+' 道工序），下一个批次可参考学习');
+}
+
+// ===== 按阶段改人数（只重排选中工序那几天，其它日期不动） =====
+function stageRange(ci, stageName){
+  var out=[];
+  for(var i=0;i<D.rows.length;i++){ var r=D.rows[i]; if(r && r.d && (r['w'+ci]||[]).indexOf(stageName)>=0) out.push(r.d); }
+  out.sort(); return out;
+}
+function dayLV(ri){
+  var r=D.rows[ri], lv=1;
+  for(var b=0;b<D.batch.length;b++){
+    (r['w'+b]||[]).forEach(function(w){
+      ['利妥昔','LNF2501','LNF2529','_default'].forEach(function(v){
+        var sts=(AI_TEMPLATES[v]||{stages:[]}).stages;
+        for(var k=0;k<sts.length;k++){ if(sts[k].w===w && sts[k].lv>lv) lv=sts[k].lv; }
+      });
+    });
+  }
+  return lv;
+}
+function openStageCount(ri, ci){
+  var r = D.rows[ri]; if(!r) return;
+  var arr = r['w'+ci]||[];
+  var variety = D.batch[ci];
+  var ref = AI_TEMPLATES[variety] || AI_TEMPLATES['_default'];
+  var stageNames=(ref.stages||[]).map(function(s){return s.w;});
+  var pick=null, pref=['2500L培养','500L培养','100L培养','WAVE培养'];
+  for(var i=0;i<pref.length;i++){ if(arr.indexOf(pref[i])>=0){ pick=pref[i]; break; } }
+  if(!pick){ for(var i=0;i<arr.length;i++){ if(stageNames.indexOf(arr[i])>=0){ pick=arr[i]; break; } } }
+  if(!pick){ msg('当前格子里没有可设置人数的核心工序'); return; }
+  customPrompt('为「'+pick+'」设置人数（早班 小夜 大夜，空格分隔，只重排该工序这几天）：', '8 1 1', function(s){
+    var parts=String(s||'').split(/\s+/).map(function(x){return parseInt(x,10);});
+    var ne=parts[0]||8, ns=parts[1]||1, nbn=parts[2]||1;
+    reassignStage(ci, pick, ne, ns, nbn);
+  });
+}
+function reassignStage(ci, stageName, ne, ns, nbn){
+  var dates = stageRange(ci, stageName);
+  if(!dates.length){ msg('未找到该工序对应日期'); return; }
+  var counts={e:ne, s:ns, bn:nbn};
+  var dateSet={}; dates.forEach(function(d){ dateSet[d]=1; });
+  var prevSmall=null, prevBN=[], streaks={};
+  D.people.forEach(function(p){ streaks[p]=0; });
+  var sorted = D.rows.slice().sort(function(a,b){ return a.d>b.d?1:(a.d<b.d?-1:0); });
+  var firstIdx = sorted.findIndex(function(r){ return r.d===dates[0]; });
+  var prevDate = sl(fmtD(addDays(new Date(dates[0]), -1)));
+  var prevRow = sorted.filter(function(r){ return r.d===prevDate; })[0];
+  if(prevRow && !dateSet[prevDate]){
+    if(prevRow.s2 && prevRow.s2.length) prevSmall = prevRow.s2[0].n;
+    prevBN = (prevRow.bn||[]).map(function(x){return x.n;});
+  }
+  var cc={}; D.people.forEach(function(p){ cc[p]=0; });
+  for(var k=firstIdx-1; k>=0 && k>=firstIdx-8; k--){
+    var rr=sorted[k]; var nightSet={};
+    (rr.s2||[]).concat(rr.bn||[]).forEach(function(x){ nightSet[x.n]=1; });
+    D.people.forEach(function(p){ if(nightSet[p]) cc[p]++; else cc[p]=0; });
+  }
+  streaks=cc;
+  var nCnt=0;
+  for(var ki=0; ki<dates.length; ki++){
+    var ds=dates[ki];
+    var ri = D.rows.findIndex(function(r){ return r.d===ds; });
+    if(ri<0) continue;
+    var r=D.rows[ri];
+    var ctx={weekday:new Date(ds).getDay(), prevBN:prevBN, streaks:streaks};
+    var lv=dayLV(ri);
+    var asg = aiAssign(ki, counts, 3, false, prevSmall, ctx);
+    var nightToday={};
+    (asg.s||[]).concat(asg.bn||[]).forEach(function(x){ nightToday[x]=1; });
+    D.people.forEach(function(p){ streaks[p] = nightToday[p] ? ((streaks[p]||0)+1) : 0; });
+    prevSmall = (asg.s && asg.s.length) ? asg.s[0] : null;
+    prevBN = asg.bn.slice();
+    var oldMb = r.mb? r.mb.slice() : [], oldMp = r.mp? r.mp.slice() : [];
+    r.e  = asg.e.map(function(n){ return {n:n,f:0}; });
+    r.mb = oldMb; r.mp = oldMp;
+    r.s1 = [];
+    r.s2 = asg.s.map(function(n){ return {n:n,f:0}; });
+    r.bn = asg.bn.map(function(n){ return {n:n,f:0}; });
+    r.of = asg.of.map(function(n){ return {n:n,f:0}; });
+    nCnt++;
+  }
+  save(); render();
+  msg('✅ 已按新人数重排「'+stageName+'」共 '+nCnt+' 天（其它日期未动）');
+}
+
 function aiGen(){
   var box = $('aiRows');
   var inputs = [];
@@ -2268,11 +2411,11 @@ function aiGen(){
   D.females = _aiFem.slice();
   D.leaders = _aiLead.slice();
   var lines = inputs.map(function(inp){
-    var tpl = AI_TEMPLATES[inp.variety] || AI_TEMPLATES['_default'];
+    var tpl = learnedTemplate(inp.variety) || AI_TEMPLATES[inp.variety] || AI_TEMPLATES['_default'];
     var start = new Date(inp.date);
     var end = addDays(start, tpl.total - 1);
     var colName = inp.batch || D.batch[inp.col] || inp.variety;
-    var note = AI_TEMPLATES[inp.variety] ? '' : '（无专属模板，用通用模板）';
+    var note = learnedTemplate(inp.variety) ? '（◆学习模板）' : (AI_TEMPLATES[inp.variety] ? '' : '（无专属模板，用通用模板）');
     return '▪ '+inp.variety+' → 第'+(inp.col+1)+'列（批号：'+colName+'）　'+fmtD(start)+' ~ '+fmtD(end)+'（'+tpl.total+'天）'+note;
   });
   var sum = '<b>将自动生成以下排班：</b><br>'+lines.join('<br>')+'<br><br>';
@@ -2318,7 +2461,7 @@ function aiRun(inputs, counts, doMbMp, overwrite){
   inputs.forEach(function(inp){
     inp.col = aiEnsureCol(inp.variety);
     if(inp.batch && inp.batch !== D.batch[inp.col]) D.batch[inp.col] = inp.batch;
-    var tpl = AI_TEMPLATES[inp.variety] || AI_TEMPLATES['_default'];
+    var tpl = learnedTemplate(inp.variety) || AI_TEMPLATES[inp.variety] || AI_TEMPLATES['_default'];
     // 收集"提前一天准备"动作：每个转罐/移种日(st.from)的前一天(st.from-1)要做备料/接收培养液/预热
     var prepMap = {};
     tpl.stages.forEach(function(st){
