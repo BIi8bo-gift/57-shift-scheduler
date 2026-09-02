@@ -533,8 +533,9 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
 }
 .tg:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,.1)}
 /* 人员列名字竖排（每人一行） */
-.ppl-col{max-width:235px}
-.ppl-col .tg{display:inline-flex;margin:2px}
+.ppl-col{min-width:110px}
+.ppl{display:flex;flex-wrap:wrap;justify-content:center;max-width:230px}
+.ppl .tg{display:inline-flex;margin:2px}
 
 /* Force shift tag */
 .tg-force{
@@ -1262,7 +1263,7 @@ function render(){
         var c = x.f ? 'var(--red)' : 'transparent';
         return tg(x.n, c);
       }).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl ppl-col" style="background:'+cellBg(k)+'" onclick="pkP('+ri+',\''+k+'\')" title="左键编辑">'+txt+'</td>';
+      return '<td class="cl ppl-col" style="background:'+cellBg(k)+'" onclick="pkP('+ri+',\''+k+'\')" title="左键编辑"><span class="ppl">'+txt+'</span></td>';
     }
     
     var animStyle = _firstRender ? 'animation:rowIn 250ms var(--ease-out) both;animation-delay:'+(di*25)+'ms;' : '';
