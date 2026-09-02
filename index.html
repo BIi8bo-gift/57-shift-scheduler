@@ -520,7 +520,7 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
 [data-theme="dark"] .cl:hover{filter:brightness(1.14)}
 
 /* ===== TAGS ===== */
-.shift-h{min-width:120px} .batch-h{min-width:150px} .tg{
+.shift-h{min-width:120px} .batch-h{min-width:110px} .tg{
   display:inline-flex;align-items:center;
   padding:3px 8px;border-radius:var(--r-sm);
   font-size:.6875rem;margin:1px;
@@ -1098,7 +1098,7 @@ function drawH(){
     var e=$('h'+i);
     if(!e){
       e=document.createElement('th');
-      e.id='h'+i; e.className='batch-h'; e.style.minWidth='150px';
+      e.id='h'+i; e.className='batch-h'; e.style.minWidth='110px';
       e.style.background='var(--bg)';
       if(firstShift && firstShift.parentNode){ firstShift.parentNode.insertBefore(e, firstShift); }
       else if(hdrRow){ hdrRow.appendChild(e); }
@@ -1237,7 +1237,7 @@ function render(){
     for(var _i=0;_i<_pk.length;_i++){ var _a=_row[_pk[_i]]||[]; if(_a.length>_pmax[_pk[_i]])_pmax[_pk[_i]]=_a.length; } }
   var _pw={}; for(var _i=0;_i<_pk.length;_i++){ var _n=_pmax[_pk[_i]]; _pw[_pk[_i]] = Math.max(64, Math.min(_n,3)*64); }
   var wrapEl = document.querySelector('.wrap');
-  if(wrapEl){ var _cs = 60 + 110; for(var _i=0;_i<_pk.length;_i++) _cs += _pw[_pk[_i]]; _cs += D.batch.length * 150;
+  if(wrapEl){ var _cs = 60 + 110; for(var _i=0;_i<_pk.length;_i++) _cs += _pw[_pk[_i]]; _cs += D.batch.length * 110;
     wrapEl.style.maxWidth = Math.max(640, _cs) + 'px'; }
   var tb = $('tb');
   var filtered = getFilteredRows();
