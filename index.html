@@ -1326,6 +1326,7 @@ function addRow(){
 // ===== 自定义确认/输入弹窗（替代浏览器原生prompt/confirm） =====
 var _cb = null;
 var _cbMode = null; // 'confirm' or 'prompt'
+var _stageCtx = null; // 按工序改人数 弹窗上下文
 
 function customConfirm(msg, fn){
   _cb = fn; _cbMode = 'confirm';
@@ -1372,7 +1373,7 @@ function promptOk(){
 }
 
 function mdClose(){
-  $('mx').className='m'; _ctx=null; _mgr=null; _cb=null; _cbMode=null;
+  $('mx').className='m'; _ctx=null; _mgr=null; _cb=null; _cbMode=null; _stageCtx=null;
   $('mxn').style.display='';
   $('mxn').value='';
   var ab=$('mx').querySelector('.ab'); if(ab)ab.style.display='';
@@ -2329,11 +2330,42 @@ function openStageCount(ri, ci){
   for(var i=0;i<pref.length;i++){ if(arr.indexOf(pref[i])>=0){ pick=pref[i]; break; } }
   if(!pick){ for(var i=0;i<arr.length;i++){ if(stageNames.indexOf(arr[i])>=0){ pick=arr[i]; break; } } }
   if(!pick){ msg('当前格子里没有可设置人数的核心工序'); return; }
-  customPrompt('为「'+pick+'」设置人数（早班 小夜 大夜，空格分隔，只重排该工序这几天）：', '8 1 1', function(s){
-    var parts=String(s||'').split(/\s+/).map(function(x){return parseInt(x,10);});
-    var ne=parts[0]||8, ns=parts[1]||1, nbn=parts[2]||1;
-    reassignStage(ci, pick, ne, ns, nbn);
-  });
+  // pop: three number inputs + live remaining (matches main AI popup, no spaces needed)
+  _stageCtx = {ri:ri, ci:ci, pick:pick};
+  $('mxt').innerHTML = '<span class="mh-icon">🔢</span>'+pick+' — 设置人数';
+  $('mxh').textContent = '输入 早班/小夜/大夜 人数（只重排该工序这几天），下方实时显示剩余';
+  $('mxg').style.display = '';
+  $('mxg').innerHTML = '<div style="text-align:left;padding:4px 0">'+
+    '<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:10px">'+
+      '<label>早班 <input type="number" class="inp sc-n" id="scNE" value="8" min="0" max="99" style="width:74px" oninput="scRemain()"></label>'+
+      '<label>小夜 <input type="number" class="inp sc-n" id="scNS" value="1" min="0" max="99" style="width:74px" oninput="scRemain()"></label>'+
+      '<label>大夜 <input type="number" class="inp sc-n" id="scNBN" value="1" min="0" max="99" style="width:74px" oninput="scRemain()"></label>'+
+    '</div>'+
+    '<div id="scRemain" style="font-weight:700;color:var(--accent)"></div>'+
+    '<div id="scHint" style="margin-top:6px;font-size:12px;color:var(--text-muted)"></div>'+
+  '</div>';
+  $('mxn').style.display = 'none';
+  var ab=$('mx').querySelector('.ab'); if(ab) ab.style.display='none';
+  var bt=$('mx').querySelector('.bt');
+  bt.innerHTML = '<button class="btn btn-o" onclick="mdClose()">取消</button><button class="btn btn-p" onclick="scOk()">确定</button>';
+  $('mx').className = 'm s';
+  $('mxg').style.maxHeight = 'auto';
+  scRemain();
+}
+function scRemain(){
+  var ne=parseInt($('scNE').value)||0, ns=parseInt($('scNS').value)||0, nbn=parseInt($('scNBN').value)||0;
+  var total=(D.people||[]).length;
+  var rem=total-ne-ns-nbn;
+  var el=$('scRemain');
+  if(el) el.textContent='剩余 '+Math.max(0,rem)+' 人'+(rem<0?'（超出 '+(-rem)+' 人，需减人数）':'');
+  var hint=$('scHint');
+  if(hint) hint.textContent='当前总人数：'+total+' 人（组长/女生不排夜班/特殊规则实际可排更少）';
+}
+function scOk(){
+  var c=_stageCtx; if(!c) return;
+  var ne=parseInt($('scNE').value)||0, ns=parseInt($('scNS').value)||0, nbn=parseInt($('scNBN').value)||0;
+  mdClose();
+  reassignStage(c.ci, c.pick, ne, ns, nbn);
 }
 function reassignStage(ci, stageName, ne, ns, nbn){
   var dates = stageRange(ci, stageName);
@@ -2371,9 +2403,17 @@ function reassignStage(ci, stageName, ne, ns, nbn){
     D.people.forEach(function(p){ streaks[p] = nightToday[p] ? ((streaks[p]||0)+1) : 0; });
     prevSmall = (asg.s && asg.s.length) ? asg.s[0] : null;
     prevBN = asg.bn.slice();
-    var oldMb = r.mb? r.mb.slice() : [], oldMp = r.mp? r.mp.slice() : [];
+    // 中午值班/延迟吃饭：从本次新排的早班前两人里选，不能与小夜/大夜的人重复
+    var nightSet={}; (asg.s||[]).concat(asg.bn||[]).forEach(function(n){ nightSet[n]=1; });
+    var mbN=[], mpN=[];
+    for(var _k=0;_k<(asg.e||[]).length;_k++){
+      var _n=asg.e[_k]; if(nightSet[_n]) continue;
+      if(!mbN.length) mbN.push(_n);
+      else if(!mpN.length) mpN.push(_n);
+    }
     r.e  = asg.e.map(function(n){ return {n:n,f:0}; });
-    r.mb = oldMb; r.mp = oldMp;
+    r.mb = mbN.map(function(n){ return {n:n,f:0}; });
+    r.mp = mpN.map(function(n){ return {n:n,f:0}; });
     r.s1 = [];
     r.s2 = asg.s.map(function(n){ return {n:n,f:0}; });
     r.bn = asg.bn.map(function(n){ return {n:n,f:0}; });
