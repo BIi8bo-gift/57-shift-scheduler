@@ -2033,6 +2033,7 @@ var AI_TEMPLATES = {
 };
 var _aiFem = [];
 var _aiLead = [];
+var _aiUseLearn = false;
 // 固定项目→列映射（利妥昔=第1列, LNF2501=第2列, LNF2529=第3列；新品种自动往后加列）
 var AI_COL_FIX = {'利妥昔':0, 'LNF2501':1, 'LNF2529':2};
 function aiColFor(variety){
@@ -2112,6 +2113,7 @@ function aiOpen(){
   h += '<span id="aiRemain" style="margin-left:8px;font-weight:700;color:var(--accent)"></span>';
   h += '<label style="margin-left:8px"><input type="checkbox" id="aiMbMp" checked> 自动分配中午值班/延迟吃饭</label>';
   h += '<label><input type="checkbox" id="aiOverwrite"> 覆盖已有排班（默认不覆盖）</label>';
+  h += '<label><input type="checkbox" id="aiUseLearn"> 📚 参考历史批次</label>';
   h += '</div>';
   h += '<div class="ai-fem">女生名单（不排小夜/大夜，点击切换）：<span id="aiFemChips"></span></div>';
   h += '<div class="ai-fem">组长（不自动排班，点击切换）：<span id="aiLeadChips"></span></div>';
@@ -2138,7 +2140,6 @@ function aiOpen(){
 function aiVarOptions(){
   var names = {};
   Object.keys(AI_COL_FIX).forEach(function(k){ names[k]=1; });
-  D.batch.forEach(function(b){ if(b) names[b]=1; });
   Object.keys(AI_TEMPLATES).forEach(function(k){ if(k!=='_default') names[k]=1; });
   var h='';
   Object.keys(names).forEach(function(k){ h+='<option value="'+esc(k)+'"></option>'; });
@@ -2154,7 +2155,6 @@ function aiAddRow(auto){
     '<input class="inp" style="width:92px" list="aiVarList" placeholder="品种" oninput="aiAutoCol(this)">'+
     '<input type="date" class="inp" style="width:124px" value="'+today()+'">'+
     '<input class="inp ai-bat" style="width:112px" placeholder="批号(可自写)" title="填写本批批号，每批不一样，会自动写到表头" oninput="aiBatEdited(this)">'+
-    '<span class="ai-colinfo" style="font-size:11px;color:var(--text-muted);white-space:nowrap"></span>'+
     '<button class="btn-x" onclick="aiDelRow(this)" title="删除该品种">✕</button>';
   box.appendChild(r);
   var dl = $('aiVarList');
@@ -2387,6 +2387,7 @@ function reassignStage(ci, stageName, ne, ns, nbn){
 }
 
 function aiGen(){
+  _aiUseLearn = $('aiUseLearn') && $('aiUseLearn').checked;
   var box = $('aiRows');
   var inputs = [];
   var rows = box.children;
@@ -2417,11 +2418,11 @@ function aiGen(){
   D.females = _aiFem.slice();
   D.leaders = _aiLead.slice();
   var lines = inputs.map(function(inp){
-    var tpl = learnedTemplate(inp.variety) || AI_TEMPLATES[inp.variety] || AI_TEMPLATES['_default'];
+    var tpl = (_aiUseLearn ? learnedTemplate(inp.variety) : null) || AI_TEMPLATES[inp.variety] || AI_TEMPLATES['_default'];
     var start = new Date(inp.date);
     var end = addDays(start, tpl.total - 1);
     var colName = inp.batch || D.batch[inp.col] || inp.variety;
-    var note = learnedTemplate(inp.variety) ? '（◆学习模板）' : (AI_TEMPLATES[inp.variety] ? '' : '（无专属模板，用通用模板）');
+    var note = (_aiUseLearn && learnedTemplate(inp.variety)) ? '（◆学习模板）' : (AI_TEMPLATES[inp.variety] ? '' : '（无专属模板，用通用模板）');
     return '▪ '+inp.variety+' → 第'+(inp.col+1)+'列（批号：'+colName+'）　'+fmtD(start)+' ~ '+fmtD(end)+'（'+tpl.total+'天）'+note;
   });
   var sum = '<b>将自动生成以下排班：</b><br>'+lines.join('<br>')+'<br><br>';
@@ -2467,7 +2468,7 @@ function aiRun(inputs, counts, doMbMp, overwrite){
   inputs.forEach(function(inp){
     inp.col = aiEnsureCol(inp.variety);
     if(inp.batch && inp.batch !== D.batch[inp.col]) D.batch[inp.col] = inp.batch;
-    var tpl = learnedTemplate(inp.variety) || AI_TEMPLATES[inp.variety] || AI_TEMPLATES['_default'];
+    var tpl = (_aiUseLearn ? learnedTemplate(inp.variety) : null) || AI_TEMPLATES[inp.variety] || AI_TEMPLATES['_default'];
     // 收集"提前一天准备"动作：每个转罐/移种日(st.from)的前一天(st.from-1)要做备料/接收培养液/预热
     var prepMap = {};
     tpl.stages.forEach(function(st){
