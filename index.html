@@ -422,7 +422,7 @@ input[type=checkbox]{
 
 /* ===== TABLE ===== */
 table{
-  width:100%;border-collapse:collapse;
+  width:100%;table-layout:fixed;border-collapse:collapse;
   font-size:.875rem;font-family:var(--font);
   font-variant-numeric:tabular-nums;
 }
@@ -1237,8 +1237,7 @@ function render(){
     for(var _i=0;_i<_pk.length;_i++){ var _a=_row[_pk[_i]]||[]; if(_a.length>_pmax[_pk[_i]])_pmax[_pk[_i]]=_a.length; } }
   var _pw={}; for(var _i=0;_i<_pk.length;_i++){ var _n=_pmax[_pk[_i]]; _pw[_pk[_i]] = Math.max(64, Math.min(_n,3)*64); }
   var wrapEl = document.querySelector('.wrap');
-  if(wrapEl){ var _cs = 60 + 110; for(var _i=0;_i<_pk.length;_i++) _cs += _pw[_pk[_i]]; _cs += D.batch.length * 110;
-    wrapEl.style.maxWidth = Math.max(640, _cs) + 'px'; }
+  if(wrapEl){ wrapEl.style.maxWidth = '1200px'; }
   var tb = $('tb');
   var filtered = getFilteredRows();
   if(!filtered.length){
@@ -1270,7 +1269,7 @@ function render(){
         var c = x.f ? 'var(--red)' : 'transparent';
         return tg(x.n, c);
       }).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl ppl-col" style="background:'+cellBg(k)+'" onclick="pkP('+ri+',\''+k+'\')" title="左键编辑"><span class="ppl" style="width:'+(_pw[k]||64)+'px">'+txt+'</span></td>';
+      return '<td class="cl ppl-col" style="background:'+cellBg(k)+'" onclick="pkP('+ri+',\''+k+'\')" title="左键编辑"><span class="ppl">'+txt+'</span></td>';
     }
     
     var animStyle = _firstRender ? 'animation:rowIn 250ms var(--ease-out) both;animation-delay:'+(di*25)+'ms;' : '';
