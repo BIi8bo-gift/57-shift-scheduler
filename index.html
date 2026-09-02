@@ -1331,7 +1331,7 @@ function customConfirm(msg, fn){
   $('mxh').textContent = '';
   $('mxg').style.display = 'block';
   $('mxg').style.maxHeight = 'auto';
-  $('mxg').innerHTML = '<section style="padding:16px 4px;text-align:center;font-size:1rem;color:var(--gray-700);line-height:1.6;width:100%">'+esc(msg)+'</section>';
+  $('mxg').innerHTML = '<section style="padding:16px 4px;text-align:center;font-size:1rem;color:var(--gray-700);line-height:1.6;width:100%">'+msg+'</section>';
   $('mxn').style.display = 'none';
   var ab=$('mx').querySelector('.ab'); if(ab)ab.style.display='none';
   var bt=$('mx').querySelector('.bt');
@@ -1389,7 +1389,7 @@ function pkW(ri, ci){
   $('mxt').innerHTML = '<span class="mh-icon">🥼</span>'+r.d+' — '+title;
   $('mxh').textContent = '点击选择该批号今日工作·蓝色为已选';
   gridW(cur);
-  $('mxg').insertAdjacentHTML('beforeend', '<div style="margin-top:10px"><button class="btn btn-o btn-sm" onclick="openStageCount('+ri+','+ci+')">🔢 改这段人数</button></div>');
+  $('mxg').insertAdjacentHTML('afterbegin', '<div style="margin-bottom:10px"><button class="btn btn-o btn-sm" onclick="openStageCount('+ri+','+ci+')">🔢 改这段人数（重排该工序这几天）</button></div>');
   $('mxn').placeholder = '新工作内容';
   $('mx').className = 'm s';
   updateFooterBt();
@@ -2116,6 +2116,7 @@ function aiOpen(){
   h += '<div class="ai-fem">女生名单（不排小夜/大夜，点击切换）：<span id="aiFemChips"></span></div>';
   h += '<div class="ai-fem">组长（不自动排班，点击切换）：<span id="aiLeadChips"></span></div>';
   h += '<div class="ai-sum" id="aiRulesDisp"></div>';
+  h += '<div class="ai-sum" style="margin-top:6px"><button class="btn btn-o btn-sm" onclick="clearBatchLib()">🧹 清空学习模板(' + (D.batchLib?D.batchLib.length:0) + '条)</button><span style="font-size:11px;color:var(--text-muted)"> 若排班乱了可用它重置</span></div>';
   h += '<div class="ai-sum" id="aiSum"></div>';
   h += '</section>';
   $('mxg').innerHTML = h;
@@ -2192,7 +2193,8 @@ function aiAutoCol(inp, force){
     var c = aiColFor(v);
     if(info) info.textContent = '→ 第'+(c+1)+'列'+(c >= D.batch.length ? '（新列）' : '');
     // 批号跟随品种自动同步；但用户手动改过批号(data-edited=1)则永不覆盖
-    if(bat && bat.getAttribute('data-edited') !== '1'){
+    // 选品种不再自动填批号（批号由用户自填）
+    if(false){
       bat.value = D.batch[c] || '';
       if(force === true) bat.removeAttribute('data-edited');
     }
@@ -2272,6 +2274,10 @@ function learnedTemplate(variety){
   stages.sort(function(a,b){ return a.from-b.from; });
   var total=stages.reduce(function(mx,s){ return Math.max(mx, s.to+1); }, 1);
   return {label:(''+variety+'（学习模板·'+saved.length+'批）'), total:total, stages:stages};
+}
+function clearBatchLib(){
+  if(!D.batchLib || !D.batchLib.length){ msg('暂无学习模板'); return; }
+  customConfirm('确定清空全部学习模板（' + D.batchLib.length + '条）？', function(){ D.batchLib=[]; save(); msg('已清空学习模板'); });
 }
 function saveBatchFromCol(col){
   var variety = D.batch[col]; if(!variety){ msg('该列为空'); return; }
