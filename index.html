@@ -520,7 +520,7 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
 [data-theme="dark"] .cl:hover{filter:brightness(1.14)}
 
 /* ===== TAGS ===== */
-.tg{
+.shift-h{min-width:120px} .batch-h{min-width:200px} .tg{
   display:inline-flex;align-items:center;
   padding:3px 8px;border-radius:var(--r-sm);
   font-size:.6875rem;margin:1px;
@@ -1094,7 +1094,7 @@ function drawH(){
     var e=$('h'+i);
     if(!e){
       e=document.createElement('th');
-      e.id='h'+i; e.className='batch-h';
+      e.id='h'+i; e.className='batch-h'; e.style.minWidth='220px';
       e.style.background='var(--bg)';
       if(firstShift && firstShift.parentNode){ firstShift.parentNode.insertBefore(e, firstShift); }
       else if(hdrRow){ hdrRow.appendChild(e); }
@@ -1226,6 +1226,8 @@ function render(){
   ensureRowCols();
   drawH();
   updateMonths();
+  var wrapEl = document.querySelector('.wrap');
+  if(wrapEl){ wrapEl.style.maxWidth = Math.max(1200, 520 + D.batch.length * 210) + 'px'; }
   var tb = $('tb');
   var filtered = getFilteredRows();
   if(!filtered.length){
