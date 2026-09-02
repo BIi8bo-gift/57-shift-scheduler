@@ -1237,7 +1237,8 @@ function render(){
     for(var _i=0;_i<_pk.length;_i++){ var _a=_row[_pk[_i]]||[]; if(_a.length>_pmax[_pk[_i]])_pmax[_pk[_i]]=_a.length; } }
   var _pw={}; for(var _i=0;_i<_pk.length;_i++){ var _n=_pmax[_pk[_i]]; _pw[_pk[_i]] = Math.max(64, Math.min(_n,4)*64 + (_n>4?0:0)); }
   var wrapEl = document.querySelector('.wrap');
-  if(wrapEl){ wrapEl.style.maxWidth = Math.max(1200, 520 + D.batch.length * 210) + 'px'; }
+  if(wrapEl){ var _cs = 60 + 110; for(var _i=0;_i<_pk.length;_i++) _cs += _pw[_pk[_i]]; _cs += D.batch.length * 210;
+    wrapEl.style.maxWidth = Math.max(640, _cs) + 'px'; }
   var tb = $('tb');
   var filtered = getFilteredRows();
   if(!filtered.length){
