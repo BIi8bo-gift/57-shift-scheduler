@@ -2104,7 +2104,6 @@ function aiOpen(){
   h += '<section id="aiBox">';
   h += '<div class="ai-tip">依据 <b>利妥昔</b> / <b>LNF2501</b> / <b>LNF2529</b> 批记录的工艺时间线（复苏 → 摇瓶培养 → WAVE → 100L → 500L → 2500L → 补料 → 下罐/收获 → 碟片离心+深层过滤）自动推算。生成后可在排班表中<b>随意修改</b>。<b>全员上班</b>；女生不排小夜/大夜；小夜/大夜至少1人<b>连班值守</b>（今天小夜=明天大夜）；组长（李振、王晓龙）<b>不自动排班</b>。</div>';
   h += '<div id="aiRows"></div>';
-  h += '<datalist id="aiVarList"></datalist>';
   h += '<button class="btn btn-o btn-sm ai-add" onclick="aiAddRow()">+ 添加品种</button>';
   h += '<div class="ai-opts">';
   h += '<label>早班 <input type="number" id="aiNE" value="8" min="1" max="20" oninput="aiRemain()"></label>';
@@ -2141,8 +2140,9 @@ function aiVarOptions(){
   var names = {};
   Object.keys(AI_COL_FIX).forEach(function(k){ names[k]=1; });
   Object.keys(AI_TEMPLATES).forEach(function(k){ if(k!=='_default') names[k]=1; });
-  var h='';
-  Object.keys(names).forEach(function(k){ h+='<option value="'+esc(k)+'"></option>'; });
+  var h = '<option value="">请选品种</option>';
+  Object.keys(names).forEach(function(k){ h += '<option value="'+esc(k)+'">'+esc(k)+'</option>'; });
+  h += '<option value="__new__">＋ 自定义品种…</option>';
   return h;
 }
 
@@ -2152,17 +2152,15 @@ function aiAddRow(auto){
   var r = document.createElement('div');
   r.className = 'ai-row';
   r.innerHTML =
-    '<input class="inp" style="width:92px" list="aiVarList" placeholder="品种" oninput="aiAutoCol(this)">'+
+    '<select class="inp ai-var" style="width:120px" onchange="aiAutoCol(this)">'+aiVarOptions()+'</select>'+
     '<input type="date" class="inp" style="width:124px" value="'+today()+'">'+
     '<input class="inp ai-bat" style="width:112px" placeholder="批号(可自写)" title="填写本批批号，每批不一样，会自动写到表头" oninput="aiBatEdited(this)">'+
     '<button class="btn-x" onclick="aiDelRow(this)" title="删除该品种">✕</button>';
   box.appendChild(r);
-  var dl = $('aiVarList');
-  if(!dl.innerHTML) dl.innerHTML = aiVarOptions();
   // 只有弹窗首次初始化(auto===true)才按顺序预填品种；手动"+添加品种"时留空白行，
   // 避免删除后行数变化导致重复填成同一品种（如永远第二个是 LNF2501）
   if(auto === true){
-    var inp = r.querySelector('input[list]');
+    var inp = r.querySelector('.ai-var');
     var defs = Object.keys(AI_TEMPLATES).filter(function(k){ return k!=='_default'; });
     inp.value = defs[idx] || '';
     aiAutoCol(inp, true);
@@ -2184,24 +2182,22 @@ function aiBatEdited(inp){
   aiSum();
 }
 
-function aiAutoCol(inp, force){
-  var row = inp.parentNode;
-  var bat = row.querySelector('.ai-bat');
-  var info = row.querySelector('.ai-colinfo');
-  var v = inp.value.trim();
-  if(v){
-    var c = aiColFor(v);
-    if(info) info.textContent = '→ 第'+(c+1)+'列'+(c >= D.batch.length ? '（新列）' : '');
-    // 批号跟随品种自动同步；但用户手动改过批号(data-edited=1)则永不覆盖
-    // 选品种不再自动填批号（批号由用户自填）
-    if(false){
-      bat.value = D.batch[c] || '';
-      if(force === true) bat.removeAttribute('data-edited');
-    }
-  } else {
-    if(info) info.textContent = '';
+function aiAutoCol(sel){
+  var row = sel ? sel.parentNode : null;
+  var v = sel ? (sel.value||'').trim() : '';
+  if(v === '__new__'){
+    customPrompt('输入新品种名称：', '', function(n){
+      var nm = String(n||'').trim();
+      if(!nm){ return; }
+      var o = new Option(nm, nm);
+      var next = sel.querySelector('option[value="__new__"]');
+      if(next) sel.insertBefore(o, next); else sel.appendChild(o);
+      sel.value = nm;
+      aiAutoCol(sel);
+    });
+    return;
   }
-  aiSum();
+  if(v) aiSum();
 }
 
 function aiChips(id, cur, fn){
@@ -2229,7 +2225,7 @@ function aiSum(){
   var filled = 0, days = 0;
   var rows = box.children;
   for(var i=0;i<rows.length;i++){
-    var v = rows[i].querySelector('input[list]').value.trim();
+    var v = rows[i].querySelector('.ai-var').value.trim();
     var d = rows[i].querySelector('input[type=date]').value;
     if(!v || !d) continue;
     filled++;
@@ -2392,7 +2388,7 @@ function aiGen(){
   var inputs = [];
   var rows = box.children;
   for(var i=0;i<rows.length;i++){
-    var v = rows[i].querySelector('input[list]').value.trim();
+    var v = rows[i].querySelector('.ai-var').value.trim();
     var d = rows[i].querySelector('input[type=date]').value;
     if(!v && !d) continue; // 空行跳过
     if(!v){ msg('第'+(i+1)+'行请填写品种'); return; }
