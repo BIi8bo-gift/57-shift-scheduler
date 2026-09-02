@@ -1235,7 +1235,7 @@ function render(){
   for(var _i=0;_i<_pk.length;_i++) _pmax[_pk[_i]]=0;
   for(var _ri=0;_ri<D.rows.length;_ri++){ var _row=D.rows[_ri]; if(!_row)continue;
     for(var _i=0;_i<_pk.length;_i++){ var _a=_row[_pk[_i]]||[]; if(_a.length>_pmax[_pk[_i]])_pmax[_pk[_i]]=_a.length; } }
-  var _pw={}; for(var _i=0;_i<_pk.length;_i++){ var _n=_pmax[_pk[_i]]; _pw[_pk[_i]] = Math.max(64, Math.min(_n,4)*64 + (_n>4?0:0)); }
+  var _pw={}; for(var _i=0;_i<_pk.length;_i++){ var _n=_pmax[_pk[_i]]; _pw[_pk[_i]] = Math.max(64, Math.min(_n,3)*64); }
   var wrapEl = document.querySelector('.wrap');
   if(wrapEl){ var _cs = 60 + 110; for(var _i=0;_i<_pk.length;_i++) _cs += _pw[_pk[_i]]; _cs += D.batch.length * 150;
     wrapEl.style.maxWidth = Math.max(640, _cs) + 'px'; }
