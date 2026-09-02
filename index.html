@@ -533,8 +533,8 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
 }
 .tg:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,.1)}
 /* 人员列名字竖排（每人一行） */
-.ppl-col{max-width:none;min-width:150px}
-.ppl{display:flex;flex-wrap:wrap;justify-content:center;width:210px}
+.ppl-col{max-width:none}
+.ppl{display:flex;flex-wrap:wrap;justify-content:center}
 .ppl .tg{display:inline-flex;margin:2px}
 
 /* Force shift tag */
@@ -1230,6 +1230,12 @@ function render(){
   ensureRowCols();
   drawH();
   updateMonths();
+  // dynamic per-column width: personeel columns wide by max count
+  var _pk=['e','mb','mp','s1','s2','bn','of'], _pmax={};
+  for(var _i=0;_i<_pk.length;_i++) _pmax[_pk[_i]]=0;
+  for(var _ri=0;_ri<D.rows.length;_ri++){ var _row=D.rows[_ri]; if(!_row)continue;
+    for(var _i=0;_i<_pk.length;_i++){ var _a=_row[_pk[_i]]||[]; if(_a.length>_pmax[_pk[_i]])_pmax[_pk[_i]]=_a.length; } }
+  var _pw={}; for(var _i=0;_i<_pk.length;_i++){ var _n=_pmax[_pk[_i]]; _pw[_pk[_i]] = Math.max(64, Math.min(_n,4)*64 + (_n>4?0:0)); }
   var wrapEl = document.querySelector('.wrap');
   if(wrapEl){ wrapEl.style.maxWidth = Math.max(1200, 520 + D.batch.length * 210) + 'px'; }
   var tb = $('tb');
@@ -1263,7 +1269,7 @@ function render(){
         var c = x.f ? 'var(--red)' : 'transparent';
         return tg(x.n, c);
       }).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl ppl-col" style="background:'+cellBg(k)+'" onclick="pkP('+ri+',\''+k+'\')" title="左键编辑"><span class="ppl">'+txt+'</span></td>';
+      return '<td class="cl ppl-col" style="background:'+cellBg(k)+'" onclick="pkP('+ri+',\''+k+'\')" title="左键编辑"><span class="ppl" style="width:'+(_pw[k]||64)+'px">'+txt+'</span></td>';
     }
     
     var animStyle = _firstRender ? 'animation:rowIn 250ms var(--ease-out) both;animation-delay:'+(di*25)+'ms;' : '';
