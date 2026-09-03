@@ -1233,8 +1233,11 @@ function lockApplySelection(){
     }
   }
   _lockSel = {}; _lockStart = null; _lockCur = null;
+  var undo = _lockMode==='unlock';
+  _lockMode = false;
+  var b = $('btnLockMode'); if(b) b.textContent = '🔒 锁定';
   pushHist(); save(); render();
-  msg(_lockMode==='unlock' ? ('✅ 已解锁 '+uncnt+' 个格子') : ('✅ 已锁定 '+cnt+' 个格子（重排/改人数时跳过）'));
+  msg(undo ? ('✅ 已解锁 '+uncnt+' 个格子') : ('✅ 已锁定 '+cnt+' 个格子（重排/改人数时跳过）'));
 }
 
 function lockHighlight(td, on){
