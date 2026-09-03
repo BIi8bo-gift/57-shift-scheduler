@@ -516,8 +516,9 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
   cursor:pointer;min-height:36px;line-height:1.7;
   transition:filter 120ms var(--ease-out);border-radius:3px;
 }
-.cl.locked{outline:2px solid var(--accent);outline-offset:-2px;position:relative}
-.lock-badge{position:absolute;top:1px;left:3px;font-size:9px;line-height:1;opacity:.9;z-index:2}
+.cl.locked{background:rgba(255,214,120,.55)!important;outline:2px solid #e08c00;outline-offset:-2px;position:relative}
+.lock-badge{position:absolute;top:1px;left:3px;font-size:10px;line-height:1;opacity:.95;z-index:2;color:#b45309}
+.cl.lock-sel{background:rgba(255,183,77,.5)!important;outline:2px dashed #d97706;outline-offset:-2px}
 @media(hover:hover){.cl:hover{filter:brightness(.94)}}
 [data-theme="dark"] .cl:hover{filter:brightness(1.14)}
 
@@ -819,6 +820,7 @@ th[style*="color:#fff"]{color:#fff!important}
     <span class="bar-sep"></span>
     <button class="btn btn-p" id="btnAdd" onclick="addRow()" style="min-width:72px">+ 添加</button>
     <button class="btn btn-p" id="btnSelMode" onclick="toggleSelMode()" style="min-width:72px">删除</button>
+    <button class="btn btn-o" id="btnLockMode" onclick="toggleLockMode()" style="min-width:72px">🔒 锁定</button>
     <span class="bar-sep"></span>
     <button class="btn btn-ai" onclick="aiOpen()" title="输入品种+细胞复苏日期，自动生成排班">🤖 AI排班</button>
     <button class="btn btn-o btn-sm" onclick="fbOpen()" title="发现AI排班有误？提交反馈">📮 反馈</button>
@@ -1159,6 +1161,108 @@ function renH(key){
 var _selMode = false;
 var _sel = {};
 
+// ===== 框选锁定 =====
+var _lockMode = false;
+var _lockSel = {};
+var _lockStart = null;
+var _lockCur = null;
+var _lockOrder = ['e','mb','mp','s1','s2','bn','of'];
+
+function toggleLockMode(){
+  if(!_lockMode){ _lockMode='lock'; }
+  else if(_lockMode==='lock'){ _lockMode='unlock'; }
+  else { _lockMode=false; }
+  _lockSel = {}; _lockStart = null; _lockCur = null;
+  var b = $('btnLockMode');
+  if(b){ b.textContent = _lockMode ? (_lockMode==='lock' ? '✅ 锁定中' : '🔓 解锁中') : '🔒 锁定'; }
+  var smb = $('btnSelMode'); if(smb && _lockMode){ smb.textContent='删除'; }
+  if(_selMode){ _selMode=false; document.body.className=''; _sel={}; var cbs=document.querySelectorAll('#tb .cbtd input'); for(var i=0;i<cbs.length;i++) cbs[i].checked=false; }
+  msg(_lockMode ? (_lockMode==='lock' ? '锁定模式：拖动框选要锁定的格子，松开即锁定' : '解锁模式：拖动框选要解锁的格子，松开即解锁') : '已退出锁定');
+  render();
+}
+
+function lockCellInfo(td){
+  var a = td && td.getAttribute ? td.getAttribute('onclick') : '';
+  if(!a) return null;
+  var m = a.match(/pkP\((\d+),\s*'([a-z0-9]+)'\)/);
+  if(!m) return null;
+  var ri = parseInt(m[1],10);
+  var key = m[2];
+  var kIdx = _lockOrder.indexOf(key);
+  if(kIdx < 0) return null;
+  return {ri:ri, key:key, k:kIdx};
+}
+
+function lockRectCells(){
+  if(!_lockStart || !_lockCur) return null;
+  var r1 = Math.min(_lockStart.ri, _lockCur.ri), r2 = Math.max(_lockStart.ri, _lockCur.ri);
+  var k1 = Math.min(_lockStart.k, _lockCur.k), k2 = Math.max(_lockStart.k, _lockCur.k);
+  var set = {};
+  for(var ri=r1; ri<=r2; ri++){ var r=D.rows[ri]; if(!r) continue;
+    for(var k=k1; k<=k2; k++){ var key=_lockOrder[k]; set[lockKey(r.d,key)] = 1; }
+  }
+  return set;
+}
+
+function lockApplySelection(){
+  if(!D.locks) D.locks = {};
+  var set = lockRectCells(); var cnt = 0, uncnt = 0;
+  if(set){
+    if(_lockMode==='unlock'){
+      for(var k in set){ if(D.locks[k]){ delete D.locks[k]; uncnt++; } }
+    } else {
+      for(var k in set){ if(!D.locks[k]){ D.locks[k]=1; cnt++; } }
+    }
+  }
+  _lockSel = {}; _lockStart = null; _lockCur = null;
+  pushHist(); save(); render();
+  msg(_lockMode==='unlock' ? ('✅ 已解锁 '+uncnt+' 个格子') : ('✅ 已锁定 '+cnt+' 个格子（重排/改人数时跳过）'));
+}
+
+function lockHighlight(td, on){
+  if(!td) return;
+  var cls = td.className.replace(/\.?lock-sel/g,'');
+  td.className = cls + (on ? ' lock-sel' : '');
+  if(on){ td.style.background = 'rgba(255,183,77,.45)'; } else { td.style.background = ''; }
+}
+
+function lockClearHighlight(){
+  var tds = document.querySelectorAll('#tb td.cl.lock-sel');
+  for(var i=0;i<tds.length;i++){ lockHighlight(tds[i], false); }
+}
+
+function updateLockHighlight(){
+  if(!_lockStart || !_lockCur) return;
+  lockClearHighlight();
+  var set = lockRectCells();
+  var tds = document.querySelectorAll('#tb td.cl');
+  for(var i=0;i<tds.length;i++){ var info = lockCellInfo(tds[i]); if(info){ var r=D.rows[info.ri]; var key=lockKey(r.d, info.key); if(set && set[key]){ lockHighlight(tds[i], true); } } }
+}
+
+function lockOnMouseDown(e){
+  if(!_lockMode) return;
+  var td = e.target && e.target.closest ? e.target.closest('td.cl') : null;
+  if(!td) return;
+  var info = lockCellInfo(td); if(!info) return;
+  e.preventDefault();
+  _lockStart = info; _lockCur = info;
+  updateLockHighlight();
+}
+
+function lockOnMouseMove(e){
+  if(!_lockMode || !_lockStart) return;
+  var td = e.target && e.target.closest ? e.target.closest('td.cl') : null;
+  if(!td) return;
+  var info = lockCellInfo(td); if(!info) return;
+  _lockCur = info;
+  updateLockHighlight();
+}
+
+function lockOnMouseUp(){
+  if(!_lockMode) return;
+  if(_lockStart && _lockCur){ lockApplySelection(); }
+}
+
 function toggleSelMode(){
   _selMode = !_selMode;
   document.body.className = _selMode ? 'selmode' : '';
@@ -1436,6 +1540,7 @@ function toggleLock(d, key){
 }
 // ===== 人员选择弹窗 =====
 function pkP(ri, key){
+  if(_lockMode){ return; }
   _ctx = {ri:ri, key:key, mode:'person'};
   var r = D.rows[ri];
   var cur = r[key]||[];
@@ -1949,6 +2054,7 @@ function updateFooterBt(){
 $('d').value = today();
 render();
 histInit();
+(function(){ var _tb=document.getElementById('tb'); if(_tb){ _tb.addEventListener('mousedown', lockOnMouseDown, false); _tb.addEventListener('mousemove', lockOnMouseMove, false); _tb.addEventListener('mouseup', lockOnMouseUp, false); } })();
 document.addEventListener('keydown', function(e){
   var t = e.target;
   if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
