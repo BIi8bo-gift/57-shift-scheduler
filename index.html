@@ -1040,12 +1040,30 @@ function redo(){
   msg(parts.length ? '↪️ 已重做：' + parts.join('；') : '↪️ 已重做', 5000);
 }
 
+// ===== 服务端镜像上报（自愈监控：把 D+ts+blobId 写到 /api/save，监控读 /api/load） =====
+var _svmt = null;
+function serverMirror(){
+  try{
+    if(!D || !D.people || !D.rows || !D.rows.length) return;
+    clearTimeout(_svmt);
+    _svmt = setTimeout(function(){
+      try{
+        fetch('/api/save', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({data: D, ts: Date.now(), blobId: getBlobId()})
+        }).then(function(){}).catch(function(){});
+      }catch(e){}
+    }, 600);
+  }catch(e){}
+}
 function save() {
   pushHist();
   try { localStorage.setItem('s57v2', JSON.stringify(D)); localStorage.setItem('s57ts', String(Date.now())); } catch(e){}
   // 自动保存到云端（防抖）
   if(window._saveTimer) clearTimeout(window._saveTimer);
   window._saveTimer=setTimeout(cloudSave, 500);
+  serverMirror();
 }
 
 // 页面加载时：localStorage优先，没有数据再从云端恢复
@@ -3048,6 +3066,8 @@ function fbRestore(){
     }catch(e){ msg('备份恢复失败'); }
   });
 }
+
+if(D && D.rows && D.rows.length) serverMirror();
 </script>
 </body>
 </html>
