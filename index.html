@@ -1376,7 +1376,8 @@ function render(){
     function wCell(k, ci){
       var arr = r[k]||[];
       var txt = arr.length ? arr.map(function(x){return tg(x,'transparent');}).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl" style="background:'+cellBg(k)+'" onclick="pkW('+ri+','+ci+')" title="左键编辑">'+txt+'</td>';
+      var _wk = isLocked(r.d, 'w'+ci);
+      return '<td class="cl' + (_wk ? ' locked' : '') + '" style="background:'+cellBg(k)+'" onclick="pkW('+ri+','+ci+')" title="左键编辑">' + (_wk ? '<span class="lock-badge">🔒</span>' : '') + txt + '</td>';
     }
     function pCell(k){
       var arr = r[k]||[];
@@ -1511,6 +1512,7 @@ function mdClose(){
 
 // ===== 工作内容选择弹窗 =====
 function pkW(ri, ci){
+  if(_lockMode){ return; }
   _ctx = {ri:ri, key:'w'+ci, mode:'work'};
   var r = D.rows[ri];
   var cur = r['w'+ci]||[];
@@ -1518,7 +1520,7 @@ function pkW(ri, ci){
   $('mxt').innerHTML = '<span class="mh-icon">🥼</span>'+r.d+' — '+title;
   $('mxh').textContent = '点击选择该批号今日工作·蓝色为已选';
   gridW(cur);
-  $('mxg').insertAdjacentHTML('afterbegin', '<div style="margin-bottom:10px"><button class="btn btn-o btn-sm" onclick="openStageCount('+ri+','+ci+')">🔢 改这段人数（重排该工序这几天）</button></div>');
+  $('mxg').insertAdjacentHTML('afterbegin', '<div style="margin-bottom:10px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-o btn-sm" onclick="openStageCount('+ri+','+ci+')">🔢 改这段人数（重排该工序这几天）</button><button class="btn btn-o btn-sm" onclick="toggleLock(\''+r.d+'\',\'w'+ci+'\')" title="锁定后重排/改内容不动这格">'+(isLocked(r.d,'w'+ci)?'🔓 解除锁定':'🔒 锁定这格')+'</button></div>');
   $('mxn').placeholder = '新工作内容';
   $('mx').className = 'm s';
   updateFooterBt();
@@ -1553,8 +1555,10 @@ function isLocked(d, key){ try{ return !!(D.locks && D.locks[lockKey(d,key)]); }
 function toggleLock(d, key){
   if(!D.locks) D.locks = {};
   var k = lockKey(d,key);
+  var now = !D.locks[k];
   if(D.locks[k]) delete D.locks[k]; else D.locks[k] = 1;
-  pushHist(); save(); render(); msg(D.locks[k] ? '已锁定该班次格（重排不动）' : '已解除锁定');
+  pushHist(); save(); render(); msg(now ? '已锁定该格子（重排/改内容不动）' : '已解除锁定');
+  if(typeof mdClose === 'function') mdClose();
 }
 // ===== 人员选择弹窗 =====
 function pkP(ri, key){
@@ -2708,8 +2712,7 @@ function aiRun(inputs, counts, doMbMp, overwrite){
       var existing = byDate[ds];
       if(existing && !overwrite && (existing['w'+inp.col]||[]).length){ skipCnt++; return; }
       var row = existing || newRow(ds);
-      row['w'+inp.col] = work;
-      var _ov = fbOverride(ds, inp.col); if(_ov){ row['w'+inp.col] = _ov.slice(); }
+      if(!isLocked(ds,'w'+inp.col)){ row['w'+inp.col] = work; var _ov = fbOverride(ds, inp.col); if(_ov){ row['w'+inp.col] = _ov.slice(); } }
       // 不覆盖模式：已有人员安排的行，只补工作内容，绝不动人员
       var hasPeople = ['e','mb','mp','s1','s2','bn','of'].some(function(k){ return (row[k]||[]).length>0; });
       if(!(existing && !overwrite && hasPeople)){
@@ -2995,7 +2998,7 @@ function fbApply(i){
     var row = null;
     for(var r=0;r<D.rows.length;r++){ if(D.rows[r] && D.rows[r].d===dkey){ row=D.rows[r]; break; } }
     if(!row){ row = newRow(dkey); D.rows.push(row); }
-    for(var k=0;k<cols.length;k++){ row['w'+cols[k]] = terms.slice(); }
+    for(var k=0;k<cols.length;k++){ var _wkey='w'+cols[k]; if(!isLocked(dkey,_wkey)) row[_wkey] = terms.slice(); }
     applied++;
     cur.setDate(cur.getDate()+1);
     guard++;
