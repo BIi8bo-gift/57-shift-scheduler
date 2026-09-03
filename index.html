@@ -516,6 +516,8 @@ body.selmode tbody tr:hover td{background:rgba(13,123,138,.04)!important}
   cursor:pointer;min-height:36px;line-height:1.7;
   transition:filter 120ms var(--ease-out);border-radius:3px;
 }
+.cl.locked{outline:2px solid var(--accent);outline-offset:-2px;position:relative}
+.lock-badge{position:absolute;top:1px;left:3px;font-size:9px;line-height:1;opacity:.9;z-index:2}
 @media(hover:hover){.cl:hover{filter:brightness(.94)}}
 [data-theme="dark"] .cl:hover{filter:brightness(1.14)}
 
@@ -932,12 +934,13 @@ function cloudLoad(cb) {
 }
 
 function initD() {
-  try { var r = localStorage.getItem('s57v2'); if (r) { var d = JSON.parse(r); if (d && d.people) { D = d; if(!D.colHeaders) D.colHeaders={}; return; } } } catch(e){}
+  try { var r = localStorage.getItem('s57v2'); if (r) { var d = JSON.parse(r); if (d && d.people) { D = d; if(!D.colHeaders) D.colHeaders={}; if(!D.locks) D.locks={}; return; } } } catch(e){}
   D = {
     people: ['王征征','林新燕','王晓龙','李振','王学灵','崔国干','常远','孙文斌','朱庆强','张峰','毛志琛'],
     batch: ['LNF2529','利妥昔','LNF2501'],
     colHeaders: {e:'早班',mb:'中午值班',mp:'延迟吃饭',s1:'小夜1:30',s2:'小夜3:30',bn:'大夜',of:'休班'},
     leaders: ['李振','王晓龙'],
+    locks: {},
     work: ['复苏','一级摇瓶','二级摇瓶','三级摇瓶','四级摇瓶','2500L培养','500L培养','100L培养','WAVE培养','配离心缓冲液','下罐离心','补料A/B配液','纯化','碟片离心','深层过滤','清场记录','收获'],
     rows: []
   };
@@ -1259,7 +1262,8 @@ function render(){
         var c = x.f ? 'var(--red)' : 'transparent';
         return tg(x.n, c);
       }).join('') : '<span style="color:var(--gray-300)">—</span>';
-      return '<td class="cl" style="background:'+cellBg(k)+'" onclick="pkP('+ri+',\''+k+'\')" title="左键编辑">'+txt+'</td>';
+      var _lk = isLocked(r.d, k);
+      return '<td class="cl' + (_lk ? ' locked' : '') + '" style="background:'+cellBg(k)+'" onclick="pkP('+ri+',\''+k+'\')" title="左键编辑">' + (_lk ? '<span class="lock-badge">🔒</span>' : '') + txt + '</td>';
     }
     
     var animStyle = _firstRender ? 'animation:rowIn 250ms var(--ease-out) both;animation-delay:'+(di*25)+'ms;' : '';
@@ -1421,6 +1425,15 @@ function mdDelWork(n){
   });
 }
 
+// ===== 锁定排班（固定某个班次格，重排时不动） =====
+function lockKey(d, key){ return d + '|' + key; }
+function isLocked(d, key){ try{ return !!(D.locks && D.locks[lockKey(d,key)]); }catch(e){ return false; } }
+function toggleLock(d, key){
+  if(!D.locks) D.locks = {};
+  var k = lockKey(d,key);
+  if(D.locks[k]) delete D.locks[k]; else D.locks[k] = 1;
+  pushHist(); save(); render(); msg(D.locks[k] ? '已锁定该班次格（重排不动）' : '已解除锁定');
+}
 // ===== 人员选择弹窗 =====
 function pkP(ri, key){
   _ctx = {ri:ri, key:key, mode:'person'};
@@ -1434,6 +1447,7 @@ function pkP(ri, key){
   $('mxt').innerHTML = '<span class="mh-icon">'+(icons[key]||'👤')+'</span>'+r.d+' — '+ns[key];
   $('mxh').textContent = '点击选人·灰色+虚线=已排别班·双击强制(红色)';
   gridP(cur, key, ri);
+  $('mxg').insertAdjacentHTML('afterbegin', '<div style="margin-bottom:8px;text-align:right"><button class="btn btn-o btn-sm" onclick="toggleLock(\''+r.d+'\',\''+key+'\')" title="锁定后重排不动这格">'+(isLocked(r.d,key)?'🔓 解除锁定':'🔒 锁定这格')+'</button></div>');
   $('mxn').placeholder = '新姓名';
   $('mx').className = 'm s';
   updateFooterBt();
@@ -2411,19 +2425,57 @@ function reassignStage(ci, stageName, ne, ns, nbn){
       if(!mbN.length) mbN.push(_n);
       else if(!mpN.length) mpN.push(_n);
     }
-    r.e  = asg.e.map(function(n){ return {n:n,f:0}; });
-    r.mb = mbN.map(function(n){ return {n:n,f:0}; });
-    r.mp = mpN.map(function(n){ return {n:n,f:0}; });
-    r.s1 = [];
-    r.s2 = asg.s.map(function(n){ return {n:n,f:0}; });
-    r.bn = asg.bn.map(function(n){ return {n:n,f:0}; });
-    r.of = asg.of.map(function(n){ return {n:n,f:0}; });
+    if(!isLocked(ds,'e'))  r.e  = asg.e.map(function(n){ return {n:n,f:0}; });
+    if(!isLocked(ds,'mb')) r.mb = mbN.map(function(n){ return {n:n,f:0}; });
+    if(!isLocked(ds,'mp')) r.mp = mpN.map(function(n){ return {n:n,f:0}; });
+    if(!isLocked(ds,'s1')) r.s1 = [];
+    if(!isLocked(ds,'s2')) r.s2 = asg.s.map(function(n){ return {n:n,f:0}; });
+    if(!isLocked(ds,'bn')) r.bn = asg.bn.map(function(n){ return {n:n,f:0}; });
+    if(!isLocked(ds,'of')) r.of = asg.of.map(function(n){ return {n:n,f:0}; });
     nCnt++;
   }
   save(); render();
   msg('✅ 已按新人数重排「'+stageName+'」共 '+nCnt+' 天（其它日期未动）');
 }
 
+// ===== 按当前规则重排全部（人员，工作内容不动，锁定格子跳过） =====
+function reassignAll(){
+  var Rr = aiRules();
+  var ne = 8, ns = 1, nbn = 1;
+  if(Rr.counts){ if(Rr.counts.e != null) ne = Rr.counts.e; if(Rr.counts.s != null) ns = Rr.counts.s; if(Rr.counts.bn != null) nbn = Rr.counts.bn; }
+  var counts = {e:ne, s:ns, bn:nbn};
+  var sorted = D.rows.slice().sort(function(a,b){ return a.d>b.d?1:(a.d<b.d?-1:0); });
+  if(!sorted.length){ msg('暂无排班数据可重排'); return; }
+  try{ localStorage.setItem('s57aibak', JSON.stringify(D)); }catch(e){}
+  var prevSmall = null, prevBN = [], streaks = {};
+  D.people.forEach(function(pp){ streaks[pp]=0; });
+  var n = 0;
+  for(var i=0;i<sorted.length;i++){
+    var r = sorted[i]; if(!r || !r.d) continue;
+    var ri = D.rows.indexOf(r);
+    var ctx = {weekday:new Date(r.d).getDay(), prevBN:prevBN, streaks:streaks};
+    var lv = dayLV(ri);
+    var asg = aiAssign(i, counts, lv, true, prevSmall, ctx);
+    var nightToday = {};
+    (asg.s||[]).concat(asg.bn||[]).forEach(function(x){ nightToday[x]=1; });
+    D.people.forEach(function(pp){ streaks[pp] = nightToday[pp] ? ((streaks[pp]||0)+1) : 0; });
+    prevSmall = (asg.s && asg.s.length) ? asg.s[0] : null;
+    prevBN = asg.bn.slice();
+    if(!isLocked(r.d,'e'))  r.e  = asg.e.map(function(x){ return {n:x,f:0}; });
+    if(!isLocked(r.d,'mb')) r.mb = asg.mb.map(function(x){ return {n:x,f:0}; });
+    if(!isLocked(r.d,'mp')) r.mp = asg.mp.map(function(x){ return {n:x,f:0}; });
+    if(!isLocked(r.d,'s1')) r.s1 = [];
+    if(!isLocked(r.d,'s2')) r.s2 = asg.s.map(function(x){ return {n:x,f:0}; });
+    if(!isLocked(r.d,'bn')) r.bn = asg.bn.map(function(x){ return {n:x,f:0}; });
+    if(!isLocked(r.d,'of')) r.of = asg.of.map(function(x){ return {n:x,f:0}; });
+    n++;
+  }
+  save(); render();
+  msg('✅ 已按当前规则重排 '+n+' 天班次人员（工作内容未动，锁定格已跳过）；可在☁️反馈里恢复上次生成前备份');
+}
+function confirmReassignAll(){
+  customConfirm('按当前规则重排全部？<br>将根据现有排班规则重新分配<b>所有日期</b>的班次人员（工作内容不动，锁定的格子跳过）。<br>会先自动备份，可在本弹窗「恢复备份」撤回。', function(){ reassignAll(); });
+}
 function aiGen(){
   _aiUseLearn = $('aiUseLearn') && $('aiUseLearn').checked;
   var box = $('aiRows');
@@ -2533,6 +2585,7 @@ function aiRun(inputs, counts, doMbMp, overwrite){
       if(existing && !overwrite && (existing['w'+inp.col]||[]).length){ skipCnt++; return; }
       var row = existing || newRow(ds);
       row['w'+inp.col] = work;
+      var _ov = fbOverride(ds, inp.col); if(_ov){ row['w'+inp.col] = _ov.slice(); }
       // 不覆盖模式：已有人员安排的行，只补工作内容，绝不动人员
       var hasPeople = ['e','mb','mp','s1','s2','bn','of'].some(function(k){ return (row[k]||[]).length>0; });
       if(!(existing && !overwrite && hasPeople)){
@@ -2544,13 +2597,13 @@ function aiRun(inputs, counts, doMbMp, overwrite){
         (asg.s||[]).concat(asg.bn||[]).forEach(function(x){ nightToday[x] = 1; });
         D.people.forEach(function(p){ streaks[p] = nightToday[p] ? ((streaks[p]||0) + 1) : 0; });
         prevBN = asg.bn.slice();
-        row.e  = asg.e.map(function(n){ return {n:n,f:0}; });
-        row.mb = asg.mb.map(function(n){ return {n:n,f:0}; });
-        row.mp = asg.mp.map(function(n){ return {n:n,f:0}; });
-        row.s1 = [];
-        row.s2 = asg.s.map(function(n){ return {n:n,f:0}; });
-        row.bn = asg.bn.map(function(n){ return {n:n,f:0}; });
-        row.of = asg.of.map(function(n){ return {n:n,f:0}; });
+        if(!isLocked(ds,'e'))  row.e  = asg.e.map(function(n){ return {n:n,f:0}; });
+        if(!isLocked(ds,'mb')) row.mb = asg.mb.map(function(n){ return {n:n,f:0}; });
+        if(!isLocked(ds,'mp')) row.mp = asg.mp.map(function(n){ return {n:n,f:0}; });
+        if(!isLocked(ds,'s1')) row.s1 = [];
+        if(!isLocked(ds,'s2')) row.s2 = asg.s.map(function(n){ return {n:n,f:0}; });
+        if(!isLocked(ds,'bn')) row.bn = asg.bn.map(function(n){ return {n:n,f:0}; });
+        if(!isLocked(ds,'of')) row.of = asg.of.map(function(n){ return {n:n,f:0}; });
       }
       if(existing) overCnt++; else { byDate[ds]=row; newCnt++; }
     }
@@ -2734,20 +2787,27 @@ function fbOpen(){
   $('mxh').textContent = '发现AI自动排班有误？选日期写下正确内容，提交后保存到云端，AI下次上线会自动读取修正';
   var h = '';
   h += '<section id="fbBox" class="fb-form">';
-  h += '<div class="fb-sec">📅 日期纠错（当天排班有误）</div>';
-  h += '<div class="fb-row">';
-  h += '<input type="date" class="inp" id="fbDate" style="width:132px" value="'+today()+'">';
-  h += '<button class="btn btn-g btn-sm" onclick="fbAdd()">提交反馈</button>';
+  h += '<div class="fb-sec">📅 日期纠错（支持一段日期，提交后可一键应用到排班）</div>';
+  h += '<div class="fb-row" style="flex-wrap:wrap;gap:6px">';
+  h += '<input type="date" class="inp" id="fbDate1" style="width:132px" value="'+today()+'">';
+  h += '<span style="color:var(--text-muted)">~</span>';
+  h += '<input type="date" class="inp" id="fbDate2" style="width:132px" value="'+today()+'">';
   h += '</div>';
-  h += '<textarea id="fbText" placeholder="例如：8月5日 LNF2501 应下罐但实际推迟到8月6日；或某天某列工作内容不对…"></textarea>';
+  h += '<div class="fb-row" style="flex-wrap:wrap;gap:6px;align-items:center">';
+  h += '<label style="font-size:12px">品种列 <select class="inp" id="fbCol"></select></label>';
+  h += '<label style="font-size:12px">修改 <select class="inp" id="fbMode"><option value="work">工作内容</option><option value="personnel">班次人员</option></select></label>';
+  h += '</div>';
+  h += '<textarea id="fbText" placeholder="工作内容模式：填这段日期每天应做的工作（如：下罐离心）。\n班次人员模式：填规则，如 王征征不排大夜；林新燕只排早班（自动当作规则补充）。"></textarea>';
+  h += '<div class="fb-row"><button class="btn btn-g btn-sm" onclick="fbAdd()">提交反馈</button></div>';
   h += '<div class="fb-list" id="fbList"></div>';
   h += '<div class="fb-sec">📏 排班规则（长期生效，AI排班自动遵守）</div>';
   h += '<textarea id="fbRule" placeholder="例如：王征征不排大夜；林新燕只排早班；小夜5人、大夜2人；张峰不排班自己排…"></textarea>';
-  h += '<div class="fb-row"><button class="btn btn-p btn-sm" onclick="fbAddRule()">保存规则</button></div>';
+  h += '<div class="fb-row"><button class="btn btn-p btn-sm" onclick="fbAddRule()">保存规则</button><button class="btn btn-g btn-sm" style="margin-left:6px" onclick="confirmReassignAll()">🔄 按当前规则重排全部</button></div>';
   h += '<div class="fb-list" id="fbRuleList"></div>';
   h += '</section>';
   $('mxg').innerHTML = h;
   $('mxg').style.maxHeight = '60vh';
+  var _fc=$('fbCol'); if(_fc && D.batch){ var _opts='<option value="">（全部品种）</option>'; D.batch.forEach(function(b,i){ _opts += '<option value="'+i+'">'+esc(b)+'</option>'; }); _fc.innerHTML=_opts; }
   $('mxn').style.display = 'none';
   var ab = $('mx').querySelector('.ab'); if(ab) ab.style.display='none';
   var bt = $('mx').querySelector('.bt');
@@ -2763,19 +2823,73 @@ function fbRender(){
     return;
   }
   box.innerHTML = D.feedback.map(function(f, i){
-    return '<div class="fb-item"><span class="fb-d">'+esc(f.d||'')+'</span><span class="fb-c">'+esc(f.c||'')+'</span><span class="fb-x" onclick="fbDel('+i+')" title="删除">✕</span></div>';
+    var ds = (f.d1||'') + (f.d2 && f.d2!==f.d1 ? ' ~ '+f.d2 : '');
+    var cn = (f.col!=null && D.batch[f.col]) ? D.batch[f.col] : '全部'; 
+    var modeTxt = (f.mode==='work') ? '工作' : '人员';
+    return '<div class="fb-item"><span class="fb-d">'+esc(ds)+'</span><span class="fb-c">['+esc(cn)+'·'+modeTxt+'] '+esc(f.content||'')+'</span><button class="btn btn-o btn-sm" onclick="fbApply('+i+')" style="margin:0 4px">✔ 应用</button><span class="fb-x" onclick="fbDel('+i+')" title="删除">✕</span></div>';
   }).join('');
 }
 function fbAdd(){
-  var d = $('fbDate').value;
-  var c = $('fbText').value.trim();
-  if(!d || !c){ msg('请选择日期并填写反馈内容'); return; }
-  if(!D.feedback) D.feedback = [];
-  D.feedback.push({d:sl(d), c:c, t:Date.now()});
+  var d1=$('fbDate1')?$('fbDate1').value:'';
+  var d2=$('fbDate2')?$('fbDate2').value:'';
+  var c=$('fbText').value.trim();
+  var col=$('fbCol')?$('fbCol').value:'';
+  var mode=$('fbMode')?$('fbMode').value:'work';
+  if(!c){ msg('请填写反馈内容'); return; }
+  if(!d1){ msg('请选择开始日期'); return; }
+  if(!d2) d2 = d1;
+  if(d2 < d1){ var _t=d1; d1=d2; d2=_t; }
+  var colSel = col==='' ? null : parseInt(col,10);
+  if(mode==='personnel'){ // 人员模式内容当作规则补充
+    if(!D.rules) D.rules = [];
+    if(D.rules.indexOf(c) < 0) D.rules.push(c);
+    msg('✅ 已作为排班规则保存（AI排班自动遵守）');
+  } else {
+    if(!D.feedback) D.feedback = [];
+    D.feedback.push({d1:sl(d1), d2:sl(d2), col:colSel, mode:mode, content:c, t:Date.now()});
+    msg('✅ 反馈已提交（可点「应用」改到排班表）');
+  }
   save();
-  $('fbText').value = '';
-  fbRender();
-  msg('✅ 反馈已提交并保存到云端');
+  $('fbText').value='';
+  fbRender(); fbRuleRender();
+}
+function fbApply(i){
+  var f = D.feedback && D.feedback[i]; if(!f) return;
+  if(f.mode === 'personnel'){ msg('人员反馈已作为规则自动生效，请用「按当前规则重排全部」应用'); return; }
+  var cols = [];
+  if(f.col != null) cols.push(f.col); else { for(var c=0;c<D.batch.length;c++) cols.push(c); }
+  if(!cols.length){ msg('无品种列'); return; }
+  var terms = String(f.content||'').split(/[\s、;；,，]+/).filter(function(x){ return x; });
+  if(!terms.length){ msg('反馈内容为空'); return; }
+  var ds = f.d1, end = f.d2 || f.d1;
+  var cur = new Date(ds.replace(/\//g,'-'));
+  var endD = new Date(end.replace(/\//g,'-'));
+  try{ localStorage.setItem('s57aibak', JSON.stringify(D)); }catch(e){}
+  var applied = 0, guard = 0;
+  while(cur <= endD && guard < 5000){
+    var dkey = sl(fmtD(cur));
+    var row = null;
+    for(var r=0;r<D.rows.length;r++){ if(D.rows[r] && D.rows[r].d===dkey){ row=D.rows[r]; break; } }
+    if(!row){ row = newRow(dkey); D.rows.push(row); }
+    for(var k=0;k<cols.length;k++){ row['w'+cols[k]] = terms.slice(); }
+    applied++;
+    cur.setDate(cur.getDate()+1);
+    guard++;
+  }
+  D.rows.sort(function(a,b){ return a.d>b.d?1:(a.d<b.d?-1:0); });
+  save(); render();
+  msg('✅ 已应用：'+f.d1+' ~ '+(f.d2||f.d1)+' 共 '+applied+' 天，'+((f.col!=null&&D.batch[f.col])?D.batch[f.col]:'全部')+' 列 → '+terms.join(' '));
+}
+function fbOverride(ds, col){
+  if(!D.feedback) return null;
+  for(var i=0;i<D.feedback.length;i++){
+    var f = D.feedback[i]; if(!f || f.mode!=='work') continue;
+    if(f.col != null && f.col !== col) continue;
+    if(ds < f.d1 || ds > (f.d2||f.d1)) continue;
+    var terms = String(f.content||'').split(/[\s、;；,，]+/).filter(function(x){ return x; });
+    if(terms.length) return terms;
+  }
+  return null;
 }
 function fbDel(i){
   customConfirm('删除这条反馈？', function(){
