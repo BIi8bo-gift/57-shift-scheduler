@@ -1199,25 +1199,30 @@ function toggleLockMode(){
   render();
 }
 
+function lockKeyForPos(ri, pos){
+  var r = D.rows[ri]; if(!r) return null;
+  if(pos < D.batch.length) return lockKey(r.d, 'w'+pos);
+  var pk = _lockOrder[pos - D.batch.length];
+  if(pk) return lockKey(r.d, pk);
+  return null;
+}
 function lockCellInfo(td){
   var a = td && td.getAttribute ? td.getAttribute('onclick') : '';
   if(!a) return null;
-  var m = a.match(/pkP\((\d+),\s*'([a-z0-9]+)'\)/);
-  if(!m) return null;
-  var ri = parseInt(m[1],10);
-  var key = m[2];
-  var kIdx = _lockOrder.indexOf(key);
-  if(kIdx < 0) return null;
-  return {ri:ri, key:key, k:kIdx};
+  var mw = a.match(/pkW\((\d+),(\d+)\)/);
+  if(mw){ var ri = parseInt(mw[1],10); var ci = parseInt(mw[2],10); if(ci < D.batch.length) return {ri:ri, key:'w'+ci, pos:ci}; return null; }
+  var mp = a.match(/pkP\((\d+),\s*'([a-z0-9]+)'\)/);
+  if(mp){ var ri2 = parseInt(mp[1],10); var key = mp[2]; var ki = _lockOrder.indexOf(key); if(ki < 0) return null; return {ri:ri2, key:key, pos: D.batch.length + ki}; }
+  return null;
 }
 
 function lockRectCells(){
   if(!_lockStart || !_lockCur) return null;
   var r1 = Math.min(_lockStart.ri, _lockCur.ri), r2 = Math.max(_lockStart.ri, _lockCur.ri);
-  var k1 = Math.min(_lockStart.k, _lockCur.k), k2 = Math.max(_lockStart.k, _lockCur.k);
+  var k1 = Math.min(_lockStart.pos, _lockCur.pos), k2 = Math.max(_lockStart.pos, _lockCur.pos);
   var set = {};
   for(var ri=r1; ri<=r2; ri++){ var r=D.rows[ri]; if(!r) continue;
-    for(var k=k1; k<=k2; k++){ var key=_lockOrder[k]; set[lockKey(r.d,key)] = 1; }
+    for(var k=k1; k<=k2; k++){ var key=lockKeyForPos(ri,k); if(key) set[key]=1; }
   }
   return set;
 }
